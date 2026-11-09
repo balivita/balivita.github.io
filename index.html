@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Baza Vita</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Onest:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#EEF3F3; --surface:#FFFFFF; --ink:#0F2027; --muted:#5D7178; --line:#D7E2E3;
+  --lagoon:#0E9E97; --lagoon-ink:#FFFFFF; --sun:#F0A93B; --chip:#E3EEEE; --shade:rgba(15,32,39,.08);
+  --f-display:"Unbounded","Onest",system-ui,sans-serif; --f-body:"Onest",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg:#0B151A; --surface:#13222A; --ink:#E6F0F0; --muted:#8FA5AB; --line:#24363F;
+  --lagoon:#2CC4B8; --lagoon-ink:#04201E; --sun:#F3B65A; --chip:#1B2E37; --shade:rgba(0,0,0,.35); color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;
+  padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px))}
+.app{max-width:440px;margin:0 auto;padding-block:14px 120px;display:flex;flex-direction:column;gap:14px}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--lagoon);outline-offset:2px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-family:var(--f-display);font-weight:700;font-size:20px;letter-spacing:-.01em}
+.brand small{display:block;font-family:var(--f-body);font-weight:500;font-size:12px;color:var(--muted)}
+.lotsearch{display:flex;gap:6px;align-items:center;background:var(--surface);border-radius:12px;padding:6px 6px 6px 10px;box-shadow:0 4px 12px var(--shade)}
+.lotsearch input{width:64px;border:0;background:none;font:inherit;font-weight:700;color:var(--ink);outline:none}
+.lotsearch button{background:var(--chip);border-radius:9px;padding:6px 10px;font-weight:700;font-size:13px}
+.picker{background:var(--surface);border-radius:22px;padding:14px 10px 12px;box-shadow:0 10px 30px var(--shade)}
+.picker h2{font-family:var(--f-display);font-size:15px;font-weight:500;margin:4px 8px 10px}
+.wheels{position:relative;display:grid;grid-template-columns:1.5fr .9fr 1.15fr;height:220px}
+.wheels::before{content:"";position:absolute;left:4px;right:4px;top:50%;height:40px;transform:translateY(-50%);background:var(--chip);border-radius:12px;pointer-events:none}
+.col{position:relative;min-width:0}
+.col label{position:absolute;top:-2px;left:0;right:0;text-align:center;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);z-index:2}
+.wheel{position:relative;height:220px;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;perspective:400px;
+  -webkit-mask-image:linear-gradient(transparent,#000 30%,#000 70%,transparent);mask-image:linear-gradient(transparent,#000 30%,#000 70%,transparent)}
+.wheel::-webkit-scrollbar{display:none}
+.wheel ul{list-style:none;margin:0;padding:90px 0}
+.wheel li{height:40px;display:flex;align-items:center;justify-content:center;scroll-snap-align:center;font-size:17px;font-weight:500;white-space:nowrap;color:var(--muted);user-select:none}
+.wheel li.on{color:var(--ink);font-weight:700}
+.wheel li small{font-size:11px;color:var(--muted);margin-left:5px;font-weight:500}
+.go{margin-top:12px;width:100%;background:var(--lagoon);color:var(--lagoon-ink);border-radius:16px;padding:15px;font-weight:700;font-size:16px}
+.go:disabled{opacity:.45;cursor:default}
+.hint{font-size:12px;color:var(--muted);text-align:center;margin-top:8px}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;background:var(--chip);border-radius:999px;padding:8px 13px;font-size:13px;font-weight:600}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.rhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.rhead h3{font-family:var(--f-display);font-weight:500;font-size:15px;margin:0;min-width:0}
+.rhead button{font-size:13px;color:var(--lagoon);font-weight:700;white-space:nowrap}
+.list{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--surface);border-radius:20px;overflow:hidden;box-shadow:0 6px 18px var(--shade)}
+.ph{position:relative;aspect-ratio:16/10;width:100%;display:flex;align-items:flex-end;padding:12px;color:#fff;overflow:hidden;cursor:pointer}
+.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ph::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 55%,rgba(0,0,0,.45))}
+.ph .lot,.ph .area{position:relative;z-index:1}
+.ph .lot{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700}
+.ph .area{font-family:var(--f-display);font-size:21px;font-weight:700;text-shadow:0 2px 12px rgba(0,0,0,.35)}
+.body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:8px}
+.name{font-weight:700;font-size:15px;line-height:1.3;overflow-wrap:anywhere}
+.meta{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:11.5px;font-weight:600;border-radius:8px;padding:3px 8px;background:var(--chip);color:var(--muted)}
+.tag.own{color:var(--lagoon)} .tag.yr{color:var(--sun)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.price{font-family:var(--f-display);font-size:18px;font-weight:500;font-variant-numeric:tabular-nums}
+.price small{font-family:var(--f-body);font-size:12px;color:var(--muted);font-weight:500}
+.add{border-radius:12px;padding:9px 12px;font-weight:700;font-size:13px;background:var(--chip);white-space:nowrap}
+.add[aria-pressed="true"]{background:var(--lagoon);color:var(--lagoon-ink)}
+.empty,.state{text-align:center;color:var(--muted);padding:30px 10px}
+.more{background:var(--surface);border-radius:14px;padding:13px;font-weight:700;box-shadow:0 4px 12px var(--shade)}
+.dock{position:fixed;left:0;right:0;bottom:0;padding:10px max(14px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));background:linear-gradient(transparent,var(--bg) 35%);z-index:20}
+.dock-in{max-width:440px;margin:0 auto;display:flex;gap:10px}
+.dock button{flex:1;border-radius:16px;padding:14px;font-weight:700}
+.back{flex:0 0 auto!important;background:var(--surface);box-shadow:0 4px 14px var(--shade)}
+.basket{background:var(--ink);color:var(--bg);display:flex;justify-content:center;gap:8px;align-items:center}
+.basket b{background:var(--sun);color:#1d1406;border-radius:999px;min-width:24px;padding:2px 8px;font-size:13px}
+.basket:disabled{opacity:.35;cursor:default}
+.scrim{position:fixed;inset:0;background:rgba(5,12,15,.45);z-index:30}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:31;max-height:90%;overflow-y:auto;background:var(--surface);border-radius:24px 24px 0 0;
+  padding:10px max(14px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px))}
+.sheet-in{max-width:440px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.grab{width:40px;height:5px;border-radius:9px;background:var(--line);margin:4px auto 2px}
+.sheet h3{font-family:var(--f-display);font-weight:500;font-size:18px;margin:0}
+.field{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted);font-weight:600}
+.field input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px 12px}
+.mk{display:flex;align-items:center;gap:12px}
+.mk input{flex:1;accent-color:var(--lagoon)}
+.mk output{font-family:var(--f-display);font-size:16px;color:var(--ink);min-width:58px;text-align:right}
+.lines{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.line{display:grid;grid-template-columns:1fr auto auto auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.line .n{min-width:0;font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.line .n small{display:block;font-weight:500;color:var(--muted);font-size:12px}
+.line .b{color:var(--muted);font-size:12.5px;text-decoration:line-through}
+.line .c{font-weight:700}
+.line .x{background:var(--chip);border-radius:8px;width:28px;height:28px;font-weight:700}
+.msg{background:var(--bg);border-radius:16px;padding:12px 14px;font-size:13.5px;line-height:1.5;white-space:pre-wrap;border:1px dashed var(--line);overflow-wrap:anywhere}
+.msg-h{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.send{background:var(--lagoon);color:var(--lagoon-ink);border-radius:16px;padding:15px;font-weight:700;font-size:16px}
+.send:disabled{opacity:.5}
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:13.5px;font-weight:600;z-index:40;max-width:90vw;text-align:center}
+.acts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.acts a,.acts button{background:var(--chip);border-radius:14px;padding:12px 6px;font-weight:700;font-size:13px;text-align:center;color:var(--ink);text-decoration:none}
+.acts .off{opacity:.4;pointer-events:none}
+.note{font-size:13px;color:var(--muted);line-height:1.45}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="brand">Baza Vita<small id="sub">Загружаю базу…</small></div>
+    <form class="lotsearch" id="lotf"><input id="loti" inputmode="numeric" placeholder="#LOT" aria-label="Номер LOT"><button>Найти</button></form>
+  </div>
+
+  <section id="search">
+    <div class="picker">
+      <h2>Что ищем?</h2>
+      <div class="wheels">
+        <div class="col"><label>Район</label><div class="wheel" id="w-area"><ul></ul></div></div>
+        <div class="col"><label>Спальни</label><div class="wheel" id="w-br"><ul></ul></div></div>
+        <div class="col"><label>До, млн</label><div class="wheel" id="w-price"><ul></ul></div></div>
+      </div>
+      <button class="go" id="go" disabled>Загружаю…</button>
+      <div class="hint">Крутите колёсики, число вилл обновляется сразу</div>
+    </div>
+  </section>
+
+  <section id="results" hidden>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="rhead"><h3 id="rtitle"></h3><button id="sort">Сначала дешевле</button></div>
+      <div class="chips" id="chips">
+        <button class="chip" data-f="monthly" aria-pressed="false">Помесячно</button>
+        <button class="chip" data-f="private" aria-pressed="false">Только частные</button>
+        <button class="chip" data-f="phone" aria-pressed="false">С телефоном</button>
+        <button class="chip" data-f="photo" aria-pressed="false">С фото</button>
+      </div>
+      <div class="list" id="list"></div>
+    </div>
+  </section>
+</div>
+
+<div class="dock"><div class="dock-in">
+  <button class="back" id="back" hidden>← Поиск</button>
+  <button class="basket" id="basket" disabled>Подборка <b id="bcnt">0</b></button>
+</div></div>
+<div class="scrim" id="scrim" hidden></div>
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true"><div class="sheet-in" id="sheetIn"></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const API="https://script.google.com/macros/s/AKfycbwCoOvCF13m4e02f9gu0vNkFDvCU2NS-KX3kXNbFHtW0g7zoKR8OOQg4ziWhJAzApWU/exec";
+const tg=window.Telegram&&Telegram.WebApp; const initData=tg&&tg.initData||"";
+if(tg){tg.ready();tg.expand();document.documentElement.dataset.theme=tg.colorScheme==="dark"?"dark":"light";tg.onEvent("themeChanged",()=>document.documentElement.dataset.theme=tg.colorScheme==="dark"?"dark":"light")}
+else if(matchMedia("(prefers-color-scheme: dark)").matches)document.documentElement.dataset.theme="dark";
+const hap=t=>{try{tg&&tg.HapticFeedback&&(t==="sel"?tg.HapticFeedback.selectionChanged():tg.HapticFeedback.impactOccurred(t))}catch(e){}};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const PRICES=[10,15,20,25,30,40,50,70,100,150,0];
+const BRS=["Любые","1","2","3","4","5+"];
+let V=[];
+const st={area:"Все районы",br:"Любые",max:0,sortAsc:true,f:{monthly:false,private:false,phone:false,photo:false},pick:new Map(),markup:20,client:"",shown:20};
+const mln=p=>(Math.round(p/1e5)/10).toString().replace(".",",");
+const word=n=>{const a=n%10,b=n%100;return (a===1&&b!==11)?"вилла":(a>=2&&a<=4&&(b<10||b>=20))?"виллы":"вилл"};
+const brN=v=>{const n=parseInt(v.br,10)||0;return /\+/.test(v.br)?Math.max(n,5):n};
+const img=v=>v.photo?`https://drive.google.com/thumbnail?id=${v.photo}&sz=w800`:"";
+const HUE=a=>{let h=0;for(const c of a)h=(h*31+c.charCodeAt(0))%360;return h};
+function save(){try{localStorage.setItem("bv_pick",JSON.stringify([...st.pick.keys()]));localStorage.setItem("bv_mk",st.markup)}catch(e){}}
+
+function matches(v){
+  if(st.area!=="Все районы"&&v.area!==st.area)return false;
+  if(st.br!=="Любые"){const n=brN(v);if(st.br==="5+"?n<5:n!==+st.br)return false}
+  if(st.max&&v.price>st.max*1e6)return false;
+  if(st.f.monthly&&v.yearly)return false; if(st.f.private&&!v.own)return false;
+  if(st.f.phone&&!v.phone)return false; if(st.f.photo&&!v.photo)return false;
+  return v.price>0;
+}
+const found=()=>V.filter(matches).sort((a,b)=>st.sortAsc?a.price-b.price:b.price-a.price);
+
+function wheel(el,items,label,initial,onPick){
+  const ul=el.querySelector("ul");ul.innerHTML=items.map(i=>`<li>${label(i)}</li>`).join("");
+  const lis=[...ul.children],H=40;let idx=Math.max(0,items.indexOf(initial)),t;
+  const paint=()=>{const c=el.scrollTop/H;lis.forEach((li,i)=>{const d=i-c;li.style.transform=`rotateX(${Math.max(-70,Math.min(70,d*-22))}deg) scale(${1-Math.min(Math.abs(d),3)*.06})`;li.classList.toggle("on",Math.round(c)===i)})};
+  el.scrollTop=idx*H;paint();let last=idx;
+  el.addEventListener("scroll",()=>{paint();const r=Math.round(el.scrollTop/H);if(r!==last){last=r;hap("sel")}clearTimeout(t);t=setTimeout(()=>{const n=Math.round(el.scrollTop/H);if(n!==idx){idx=n;onPick(items[n]);updCount()}},90)},{passive:true});
+  lis.forEach((li,i)=>li.addEventListener("click",()=>el.scrollTo({top:i*H,behavior:"smooth"})));
+}
+function updCount(){const n=found().length;$("#go").textContent=n?`Показать ${n} ${word(n)}`:"Ничего не найдено";$("#go").disabled=!n}
+
+function card(v){
+  const on=st.pick.has(v.lot),h=HUE(v.area);
+  return `<article class="card"><div class="ph" data-open="${esc(v.lot)}" style="background:linear-gradient(135deg,hsl(${h} 50% 40%),hsl(${(h+40)%360} 55% 26%))">
+    ${v.photo?`<img loading="lazy" alt="" src="${img(v)}" onerror="this.remove()">`:""}
+    <span class="lot">${esc(v.lot)}</span><span class="area">${esc(v.area)}</span></div>
+    <div class="body"><div class="name">${esc(v.name)}</div>
+      <div class="meta"><span class="tag">${esc(v.br)}</span>${v.own?'<span class="tag own">Частное</span>':v.agency?'<span class="tag">Агентство</span>':""}${v.yearly?'<span class="tag yr">Только год</span>':""}${v.phone?'<span class="tag">WhatsApp</span>':""}</div>
+      <div class="row"><div class="price">${mln(v.price)} млн <small>/ мес</small></div>
+      <button class="add" data-add="${esc(v.lot)}" aria-pressed="${on}">${on?"✓ В подборке":"+ В подборку"}</button></div></div></article>`;
+}
+function renderList(){
+  const r=found(),part=r.slice(0,st.shown);
+  $("#rtitle").textContent=`${st.area==="Все районы"?"Все районы":st.area} · ${st.br==="Любые"?"любые спальни":st.br+"BR"} · ${r.length} ${word(r.length)}`;
+  $("#list").innerHTML=r.length?part.map(card).join("")+(r.length>part.length?`<button class="more" id="more">Ещё ${Math.min(20,r.length-part.length)} из ${r.length-part.length}</button>`:""):`<div class="empty">Под эти фильтры ничего нет. Снимите фильтр или поднимите бюджет.</div>`;
+  const m=$("#more");if(m)m.onclick=()=>{st.shown+=20;renderList()};
+}
+function show(scr){$("#search").hidden=scr!=="search";$("#results").hidden=scr!=="results";$("#back").hidden=scr!=="results";window.scrollTo(0,0);
+  if(tg&&tg.BackButton){scr==="results"?tg.BackButton.show():tg.BackButton.hide()}}
+$("#go").onclick=()=>{st.shown=20;renderList();show("results");hap("light")};
+$("#back").onclick=()=>{updCount();show("search")};
+if(tg&&tg.BackButton)tg.BackButton.onClick(()=>{if(!$("#sheet").hidden)closeSheet();else{updCount();show("search")}});
+$("#sort").onclick=()=>{st.sortAsc=!st.sortAsc;$("#sort").textContent=st.sortAsc?"Сначала дешевле":"Сначала дороже";renderList()};
+$("#chips").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;const k=b.dataset.f;st.f[k]=!st.f[k];b.setAttribute("aria-pressed",st.f[k]);st.shown=20;renderList();hap("sel")};
+$("#list").onclick=e=>{const a=e.target.closest("[data-add]");if(a){togglePick(a.dataset.add);renderList();return}const o=e.target.closest("[data-open]");if(o)openDetail(o.dataset.open)};
+$("#lotf").onsubmit=e=>{e.preventDefault();const n=parseInt(($("#loti").value||"").replace(/\D/g,""),10);if(!n)return;const lot="#"+String(n).padStart(3,"0");if(V.find(v=>v.lot===lot))openDetail(lot);else toast(`LOT ${lot} не найден`)};
+function togglePick(lot){st.pick.has(lot)?st.pick.delete(lot):st.pick.set(lot,V.find(v=>v.lot===lot));updBasket();save();hap("light")}
+function updBasket(){const n=st.pick.size;$("#bcnt").textContent=n;$("#basket").disabled=!n}
+
+function openSheet(html){$("#sheetIn").innerHTML='<div class="grab"></div>'+html;$("#scrim").hidden=false;$("#sheet").hidden=false;if(tg&&tg.BackButton)tg.BackButton.show()}
+function closeSheet(){$("#scrim").hidden=true;$("#sheet").hidden=true;if(tg&&tg.BackButton&&$("#results").hidden)tg.BackButton.hide()}
+$("#scrim").onclick=closeSheet;document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet()});
+const open=u=>{if(!u)return;tg&&tg.openLink?tg.openLink(u):window.open(u,"_blank")};
+
+function openDetail(lot){
+  const v=V.find(x=>x.lot===lot);if(!v)return;const h=HUE(v.area),on=st.pick.has(lot);
+  const wa=v.phone?`https://wa.me/${v.phone}`:"";
+  openSheet(`<div class="ph" style="border-radius:18px;background:linear-gradient(135deg,hsl(${h} 50% 40%),hsl(${(h+40)%360} 55% 26%))">${v.photo?`<img alt="" src="https://drive.google.com/thumbnail?id=${v.photo}&sz=w1200" onerror="this.remove()">`:""}<span class="lot">${esc(v.lot)}</span><span class="area">${esc(v.area)}</span></div>
+    <h3>${esc(v.name)}</h3>
+    <div class="meta"><span class="tag">${esc(v.br)}</span>${v.own?'<span class="tag own">Частное</span>':v.agency?'<span class="tag">Агентство</span>':""}${v.yearly?'<span class="tag yr">Только год</span>':""}</div>
+    <div class="price">${mln(v.price)} млн <small>/ мес · цена владельца</small></div>
+    ${v.notes?`<div class="note">${esc(v.notes)}</div>`:""}
+    <div class="acts">
+      <button data-u="${esc(v.folder)}" class="${v.folder?"":"off"}">📷 Все фото</button>
+      <button data-u="${esc(v.maps)}" class="${v.maps?"":"off"}">📍 Карта</button>
+      <button data-u="${esc(wa||v.src)}" class="${wa||v.src?"":"off"}">${wa?"💬 WhatsApp":"🔗 Источник"}</button>
+    </div>
+    <button class="send" id="dAdd">${on?"✓ Уже в подборке":"+ Добавить в подборку"}</button>`);
+  $("#sheetIn").querySelectorAll("[data-u]").forEach(b=>b.onclick=()=>open(b.dataset.u));
+  $("#dAdd").onclick=()=>{if(!st.pick.has(lot))togglePick(lot);if(!$("#results").hidden)renderList();closeSheet();toast("Добавлено в подборку")};
+}
+
+const cp=v=>Math.round(v.price*(1+st.markup/100)/5e5)*5e5;
+const idr=n=>n.toLocaleString("ru-RU").replace(/ /g," ");
+function offerText(){
+  const list=[...st.pick.values()];
+  return `Здравствуйте${st.client?", "+st.client:""}! Подобрала для вас ${list.length} ${word(list.length)} на Бали 🌴\n\n`+
+    list.map((v,i)=>`${i+1}. ${v.name}\n📍 ${v.area} · ${v.br}\n💰 ${idr(cp(v))} IDR / месяц${v.yearly?" (при аренде на год)":""}${v.folder?"\n📷 Фото: "+v.folder:""}${v.maps?"\n🗺 Карта: "+v.maps:""}`).join("\n\n")+
+    `\n\nКакой вариант посмотрим первым?`;
+}
+function openOffer(){
+  openSheet(`<h3>Предложение клиенту</h3>
+    <label class="field" for="cl">Имя клиента<input type="text" id="cl" value="${esc(st.client)}" autocomplete="off" placeholder="Например, Анна"></label>
+    <div class="field">Наценка<div class="mk"><input type="range" id="mk" min="0" max="50" step="5" value="${st.markup}"><output id="mko"></output></div></div>
+    <div class="lines" id="lines"></div>
+    <div class="msg-h">Бот пришлёт вам альбом фото и этот текст — перешлите его клиенту</div>
+    <div class="msg" id="msg"></div>
+    <button class="send" id="send"></button>`);
+  const paint=()=>{const list=[...st.pick.values()];
+    $("#lines").innerHTML=list.map(v=>`<div class="line"><div class="n">${esc(v.name)}<small>${esc(v.lot)} · ${esc(v.area)} · ${esc(v.br)}</small></div><span class="b">${mln(v.price)}</span><span class="c">${mln(cp(v))} млн</span><button class="x" data-rm="${esc(v.lot)}" aria-label="Убрать">×</button></div>`).join("");
+    $("#msg").textContent=offerText();$("#mko").textContent="+"+st.markup+"%";
+    $("#send").textContent=`Отправить в чат · ${list.length} ${word(list.length)}`;$("#send").disabled=!list.length||list.length>10;
+    if(list.length>10)$("#send").textContent="Максимум 10 вилл в одном предложении";
+    $("#lines").querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{togglePick(b.dataset.rm);paint();if(!$("#results").hidden)renderList()});};
+  paint();
+  $("#mk").oninput=e=>{st.markup=+e.target.value;paint();save();hap("sel")};
+  $("#cl").oninput=e=>{st.client=e.target.value.trim();paint()};
+  $("#send").onclick=sendOffer;
+}
+async function sendOffer(){
+  if(!initData){toast("Откройте приложение через бота в Telegram, чтобы отправить");return}
+  const b=$("#send");b.disabled=true;b.textContent="Отправляю…";
+  try{
+    const r=await fetch(API,{method:"POST",body:JSON.stringify({action:"offer",initData,lots:[...st.pick.keys()],markup:st.markup,client:st.client})});
+    const j=await r.json().catch(()=>({ok:true}));
+    if(j.ok){hap("success");closeSheet();toast("Готово: предложение в чате с ботом — перешлите его клиенту");st.pick.clear();updBasket();save();if(!$("#results").hidden)renderList();if(tg)setTimeout(()=>tg.close(),1600)}
+    else{toast("Не получилось: "+(j.error||"ошибка"));b.disabled=false;b.textContent="Попробовать ещё раз"}
+  }catch(e){toast("Нет связи с базой. Попробуйте ещё раз");b.disabled=false;b.textContent="Попробовать ещё раз"}
+}
+$("#basket").onclick=openOffer;
+let tt;function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(tt);tt=setTimeout(()=>el.hidden=true,2800)}
+
+async function load(){
+  try{
+    const r=await fetch(API+"?api=villas&init="+encodeURIComponent(initData));
+    const j=await r.json();
+    if(!j.ok){$("#sub").textContent=j.error==="auth"?"Откройте через бота в Telegram":"Ошибка загрузки";$("#go").textContent="Нет доступа";return}
+    V=j.villas;
+    const counts={};V.forEach(v=>counts[v.area]=(counts[v.area]||0)+1);
+    const areas=["Все районы",...Object.keys(counts).filter(a=>a!=="Other").sort()];
+    wheel($("#w-area"),areas,a=>a==="Все районы"?`Все<small>${V.length}</small>`:`${esc(a)}<small>${counts[a]}</small>`,st.area,v=>st.area=v);
+    wheel($("#w-br"),BRS,b=>b==="Любые"?"Любые":b+"BR",st.br,v=>st.br=v);
+    wheel($("#w-price"),PRICES,p=>p?"до "+p:"без лимита",st.max,v=>st.max=v);
+    $("#sub").textContent=`${V.length} ${word(V.length)} в базе`;
+    try{const p=JSON.parse(localStorage.getItem("bv_pick")||"[]");p.forEach(l=>{const v=V.find(x=>x.lot===l);if(v)st.pick.set(l,v)});const m=localStorage.getItem("bv_mk");if(m!==null)st.markup=+m}catch(e){}
+    updBasket();updCount();
+  }catch(e){$("#sub").textContent="Нет связи с базой";$("#go").textContent="Обновите позже"}
+}
+load();
+</script>
+</body>
+</html>
