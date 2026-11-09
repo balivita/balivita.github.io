@@ -162,6 +162,10 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .sec-h{display:flex;justify-content:space-between;align-items:end;gap:16px;margin:56px 0 24px}
 .sec-h h2{font-family:var(--f-display);font-weight:600;font-size:clamp(26px,5vw,48px);line-height:1;letter-spacing:-.02em;margin:0}
 .sec-h p{margin:0;color:var(--muted);max-width:360px}
+.navr{display:flex;gap:8px;align-items:center}
+.lang{display:flex;border:1px solid var(--line);border-radius:999px;padding:3px;backdrop-filter:blur(10px);background:rgba(10,18,21,.3)}
+.lang button{padding:6px 10px;border-radius:999px;font-size:12.5px;font-weight:700;color:var(--muted)}
+.lang button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 [hidden]{display:none!important}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
@@ -173,37 +177,37 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 <header class="hero" id="hero">
   <div class="slides" id="slides"></div>
   <div class="glow" id="glow"></div>
-  <nav class="nav"><div class="wrap"><div class="logo">BALI<b>·</b>VITA</div><a href="#catalog">Каталог</a></div></nav>
+  <nav class="nav"><div class="wrap"><div class="logo">BALI<b>·</b>VITA</div><div class="navr"><div class="lang" role="group" aria-label="Language"><button data-l="ru">RU</button><button data-l="en">EN</button></div><a href="#catalog" data-t="nav">Каталог</a></div></div></nav>
   <div class="hero-in"><div class="wrap">
-    <div class="kicker">Долгосрочная аренда</div>
-    <h1><span class="ln"><span>Виллы</span></span><span class="ln"><span>на Бали</span></span></h1>
-    <p class="lead">Отобранные виллы в лучших районах острова — от сёрф-спотов Чангу до джунглей Убуда. Листайте, выбирайте, смотрите на карте.</p>
-    <div class="stats"><div class="stat"><b data-count="0" id="s1">—</b><span>вилл в каталоге</span></div><div class="stat"><b id="s2">—</b><span>районов</span></div><div class="stat"><b id="s3">—</b><span>с фотографиями</span></div></div>
+    <div class="kicker" data-t="kicker">Долгосрочная аренда</div>
+    <h1><span class="ln"><span data-t="h1a">Виллы</span></span><span class="ln"><span data-t="h1b">на Бали</span></span></h1>
+    <p class="lead" data-t="lead">Отобранные виллы в лучших районах острова — от сёрф-спотов Чангу до джунглей Убуда. Листайте, выбирайте, смотрите на карте.</p>
+    <div class="stats"><div class="stat"><b data-count="0" id="s1">—</b><span data-t="st1">вилл в каталоге</span></div><div class="stat"><b id="s2">—</b><span data-t="st2">районов</span></div><div class="stat"><b id="s3">—</b><span data-t="st3">с фотографиями</span></div></div>
   </div></div>
-  <div class="cue">листайте</div>
+  <div class="cue" data-t="cue">листайте</div>
 </header>
 
 <div class="marq" aria-hidden="true"><div class="marq-in" id="marq"></div></div>
 
 <div class="bar" id="bar"><div class="wrap">
-  <div class="row" id="areas" role="group" aria-label="Район"></div>
+  <div class="row" id="areas" role="group" aria-label="Район" data-ta="area"></div>
   <div class="row2">
-    <div class="row" id="brs" role="group" aria-label="Спальни"></div>
-    <div class="seg" role="group" aria-label="Вид"><button data-v="grid" aria-pressed="true">Плитка</button><button data-v="map" aria-pressed="false">Карта</button></div>
+    <div class="row" id="brs" role="group" aria-label="Спальни" data-ta="beds"></div>
+    <div class="seg" role="group" aria-label="Вид"><button data-v="grid" aria-pressed="true" data-t="grid">Плитка</button><button data-v="map" aria-pressed="false" data-t="map">Карта</button></div>
   </div>
-  <div class="count" id="count">Загружаю каталог…</div>
+  <div class="count" id="count" data-t="loading">Загружаю каталог…</div>
 </div></div>
 
 <main id="catalog"><div class="wrap">
-  <div class="sec-h reveal"><h2 id="secTitle">Все виллы</h2><p>Нажмите на виллу, чтобы посмотреть все фото и расположение.</p></div>
+  <div class="sec-h reveal"><h2 id="secTitle">Все виллы</h2><p data-t="hint">Нажмите на виллу, чтобы посмотреть все фото и расположение.</p></div>
   <div class="grid" id="grid"></div>
   <div class="sentinel" id="sentinel"></div>
   <div id="mapwrap" hidden><div id="map"></div></div>
-  <div class="empty" id="empty" hidden>По этим фильтрам вилл нет — попробуйте другой район или количество спален.</div>
+  <div class="empty" id="empty" hidden data-t="empty">По этим фильтрам вилл нет — попробуйте другой район или количество спален.</div>
 </div></main>
 
-<footer><div class="wrap"><div class="logo">BALI<b>·</b>VITA</div><div id="upd">Каталог обновляется автоматически</div></div></footer>
-<button class="top-btn" id="topBtn" aria-label="Наверх">↑</button>
+<footer><div class="wrap"><div class="logo">BALI<b>·</b>VITA</div><div id="upd" data-t="upd">Каталог обновляется автоматически</div></div></footer>
+<button class="top-btn" id="topBtn" aria-label="Наверх" data-ta="top">↑</button>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
@@ -216,10 +220,38 @@ const pic=(id,w)=>`https://lh3.googleusercontent.com/d/${id}=w${w}`;
 const pic2=(id,w)=>`https://drive.google.com/thumbnail?id=${id}&sz=w${w}`;
 const imgErr="if(this.dataset.alt){this.src=this.dataset.alt;this.dataset.alt=''}";
 const brN=br=>{const n=parseInt(br,10)||0;return /\+/.test(br)?Math.max(n,5):n};
-const brTxt=br=>{const n=brN(br);if(!n)return br||"";return n>=5?"5+ спален":n+" "+(n===1?"спальня":n<5?"спальни":"спален")};
-const areaRu=a=>a==="Other"?"Другие районы":a;
-const title=v=>/^villa\s*$/i.test(v.name.trim())?`Вилла в ${areaRu(v.area)}`:v.name;
 const word=(n,f)=>{const a=n%10,b=n%100;return (a===1&&b!==11)?f[0]:(a>=2&&a<=4&&(b<10||b>=20))?f[1]:f[2]};
+const TX={
+ ru:{nav:"Каталог",kicker:"Долгосрочная аренда",h1a:"Виллы",h1b:"на Бали",lead:"Отобранные виллы в лучших районах острова — от сёрф-спотов Чангу до джунглей Убуда. Листайте, выбирайте, смотрите на карте.",
+  st1:"вилл в каталоге",st2:"районов",st3:"с фотографиями",cue:"листайте",grid:"Плитка",map:"Карта",loading:"Загружаю каталог…",hint:"Нажмите на виллу, чтобы посмотреть все фото и расположение.",
+  empty:"По этим фильтрам вилл нет — попробуйте другой район или количество спален.",upd:"Каталог обновляется автоматически",top:"Наверх",
+  allAreas:"Все районы",other:"Другие районы",any:"Любые",brShort:"сп.",found:n=>`Найдено <b>${n}</b> ${word(n,["вилла","виллы","вилл"])}`,allVillas:"Все виллы",
+  villaIn:a=>`Вилла в ${a}`,onMap:"📍 на карте",yearPill:"на год",about:"О вилле",area:"Район",beds:"Спальни",lease:"Аренда",fromYear:"от года",monthly:"помесячно",ref:"Номер",photos:"Фото",location:"Расположение",
+  approx:"примерно",close:"Закрыть",prev:"Предыдущее фото",next:"Следующее фото",photo:"фото",mapFail:"Карта не загрузилась",loadFail:"Не удалось загрузить каталог. Обновите страницу чуть позже.",
+  title:"Bali Vita — виллы на Бали",br:(n,p)=>p?n+"+ спален":n+" "+word(n,["спальня","спальни","спален"])},
+ en:{nav:"Catalogue",kicker:"Long-term rentals",h1a:"Villas",h1b:"in Bali",lead:"Hand-picked villas in the island's best areas — from Canggu's surf spots to Ubud's jungle. Browse, choose and explore them on the map.",
+  st1:"villas listed",st2:"areas",st3:"with photos",cue:"scroll",grid:"Grid",map:"Map",loading:"Loading catalogue…",hint:"Tap a villa to see all photos and its location.",
+  empty:"No villas match these filters — try another area or number of bedrooms.",upd:"The catalogue updates automatically",top:"Back to top",
+  allAreas:"All areas",other:"Other areas",any:"Any",brShort:"BR",found:n=>`<b>${n}</b> ${n===1?"villa":"villas"} found`,allVillas:"All villas",
+  villaIn:a=>`Villa in ${a}`,onMap:"📍 on the map",yearPill:"1-year",about:"About the villa",area:"Area",beds:"Bedrooms",lease:"Lease",fromYear:"1 year+",monthly:"monthly",ref:"Ref.",photos:"Photos",location:"Location",
+  approx:"approx.",close:"Close",prev:"Previous photo",next:"Next photo",photo:"photo",mapFail:"The map didn't load",loadFail:"Couldn't load the catalogue. Please refresh a bit later.",
+  title:"Bali Vita — villas in Bali",br:(n,p)=>(p?n+"+":n)+" "+(n===1&&!p?"bedroom":"bedrooms")}
+};
+const QS=new URLSearchParams(location.search);
+let LANG=(()=>{const q=(QS.get("lang")||"").toLowerCase();if(q==="en"||q==="ru")return q;try{const s=localStorage.getItem("bv_lang");if(s==="en"||s==="ru")return s}catch(e){}return /^ru|^uk|^be|^kk/i.test(navigator.language||"")?"ru":"en"})();
+const T=k=>TX[LANG][k];
+const brTxt=br=>{const n=brN(br);if(!n)return br||"";return T("br")(n,n>=5)};
+const areaRu=a=>a==="Other"?T("other"):a;
+const title=v=>/^villa\s*$/i.test(v.name.trim())?T("villaIn")(areaRu(v.area)):v.name;
+function paintStatic(){document.documentElement.lang=LANG;document.title=T("title");
+  document.querySelectorAll("[data-t]").forEach(el=>{const v=TX[LANG][el.dataset.t];if(typeof v==="string")el.textContent=v});
+  document.querySelectorAll("[data-ta]").forEach(el=>el.setAttribute("aria-label",T(el.dataset.ta)));
+  document.querySelectorAll(".lang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===LANG))}
+paintStatic();
+document.querySelector(".lang").onclick=e=>{const b=e.target.closest("[data-l]");if(!b||b.dataset.l===LANG)return;LANG=b.dataset.l;
+  try{localStorage.setItem("bv_lang",LANG)}catch(err){}const u=new URL(location.href);u.searchParams.set("lang",LANG);history.replaceState(null,"",u);
+  closeLB(true);paintStatic();if(ALL.length){const sa=st.area,sb=st.br;buildFilters();
+    document.querySelectorAll("#areas .chip").forEach(x=>x.setAttribute("aria-pressed",x.dataset.a===sa));document.querySelectorAll("#brs .chip").forEach(x=>x.setAttribute("aria-pressed",x.dataset.b===sb));apply(false)}};
 const jit=(lot,k)=>{let h=7;for(const c of lot+k)h=(h*131+c.charCodeAt(0))%100003;return (h/100003-.5)*.014};
 
 let ALL=[],LIST=[],shown=0,map=null,mlayer=null;
@@ -239,8 +271,8 @@ function countUp(el,to){if(reduce){el.textContent=to;return}const t0=performance
 function buildFilters(){
   const c={};ALL.forEach(v=>c[v.area]=(c[v.area]||0)+1);
   const areas=Object.keys(c).sort((a,b)=>a==="Other"?1:b==="Other"?-1:c[b]-c[a]);
-  $("#areas").innerHTML=`<button class="chip" data-a="all" aria-pressed="true">Все районы<small>${ALL.length}</small></button>`+areas.map(a=>`<button class="chip" data-a="${esc(a)}" aria-pressed="false">${esc(areaRu(a))}<small>${c[a]}</small></button>`).join("");
-  $("#brs").innerHTML=[["all","Любые"],["1","1"],["2","2"],["3","3"],["4","4"],["5","5+"]].map(([k,t],i)=>`<button class="chip" data-b="${k}" aria-pressed="${!i}">${k==="all"?t:t+" сп."}</button>`).join("");
+  $("#areas").innerHTML=`<button class="chip" data-a="all" aria-pressed="true">${T("allAreas")}<small>${ALL.length}</small></button>`+areas.map(a=>`<button class="chip" data-a="${esc(a)}" aria-pressed="false">${esc(areaRu(a))}<small>${c[a]}</small></button>`).join("");
+  $("#brs").innerHTML=[["all",T("any")],["1","1"],["2","2"],["3","3"],["4","4"],["5","5+"]].map(([k,t],i)=>`<button class="chip" data-b="${k}" aria-pressed="${!i}">${k==="all"?t:t+" "+T("brShort")}</button>`).join("");
   $("#marq").innerHTML=[0,1].map(()=>areas.filter(a=>a!=="Other").map(a=>`<span>${esc(a)}</span>`).join("")).join("");
   $("#areas").onclick=e=>{const b=e.target.closest("[data-a]");if(!b)return;st.area=b.dataset.a;$("#areas").querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===b));apply(true)};
   $("#brs").onclick=e=>{const b=e.target.closest("[data-b]");if(!b)return;st.br=b.dataset.b;$("#brs").querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===b));apply(true)};
@@ -250,8 +282,8 @@ function buildFilters(){
 function apply(scroll){
   LIST=ALL.filter(v=>(st.area==="all"||v.area===st.area)&&(st.br==="all"||(st.br==="5"?brN(v.br)>=5:brN(v.br)===+st.br)));
   const n=LIST.length;
-  $("#count").innerHTML=`Найдено <b>${n}</b> ${word(n,["вилла","виллы","вилл"])}${st.area!=="all"?" · "+esc(areaRu(st.area)):""}`;
-  $("#secTitle").textContent=st.area==="all"?"Все виллы":areaRu(st.area);
+  $("#count").innerHTML=`${T("found")(n)}${st.area!=="all"?" · "+esc(areaRu(st.area)):""}`;
+  $("#secTitle").textContent=st.area==="all"?T("allVillas"):areaRu(st.area);
   $("#empty").hidden=!!n;
   const isMap=st.view==="map";$("#grid").hidden=isMap;$("#mapwrap").hidden=isMap?!n:true;
   if(isMap)drawMap();else{$("#grid").innerHTML="";shown=0;more()}
@@ -264,8 +296,8 @@ function card(v,i){
   const el=document.createElement("article");el.className="card";el.tabIndex=0;el.setAttribute("role","button");el.setAttribute("aria-label",title(v)+", "+areaRu(v.area));
   el.style.transitionDelay=(i%6)*70+"ms";
   el.innerHTML=`<div class="im"><div class="sk"></div><img loading="lazy" alt="" src="${pic(v.photo,900)}" data-alt="${pic2(v.photo,900)}" onload="this.previousElementSibling&&this.previousElementSibling.remove()" onerror="${imgErr}"></div>
-    <div class="top"><span class="pill">${esc(v.lot)}</span>${v.yearly?'<span class="pill yr">на год</span>':""}</div>
-    <div class="bot"><div class="area">${esc(areaRu(v.area))}</div><h3>${esc(title(v))}</h3><div class="meta"><span>🛏 ${esc(brTxt(v.br))}</span>${v.lat?"<span>📍 на карте</span>":""}</div></div>
+    <div class="top"><span class="pill">${esc(v.lot)}</span>${v.yearly?`<span class="pill yr">${T("yearPill")}</span>`:""}</div>
+    <div class="bot"><div class="area">${esc(areaRu(v.area))}</div><h3>${esc(title(v))}</h3><div class="meta"><span>🛏 ${esc(brTxt(v.br))}</span>${v.lat?`<span>${T("onMap")}</span>`:""}</div></div>
     <span class="go" aria-hidden="true">↗</span>`;
   el.onclick=()=>openLB(v);el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openLB(v)}};
   if(!reduce&&matchMedia("(hover:hover)").matches){
@@ -284,12 +316,12 @@ new IntersectionObserver(es=>{if(es[0].isIntersecting&&st.view==="grid"&&shown<L
 function pos(v){if(v.lat&&v.lng)return[v.lat,v.lng,true];const c=AREA_C[v.area];return c?[c[0]+jit(v.lot,"a"),c[1]+jit(v.lot,"b"),false]:null}
 function tiles(m){L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(m)}
 function drawMap(){
-  if(!window.L){$("#mapwrap").innerHTML='<div class="empty">Карта не загрузилась</div>';return}
+  if(!window.L){$("#mapwrap").innerHTML=`<div class="empty">${T("mapFail")}</div>`;return}
   if(!map){map=L.map("map",{scrollWheelZoom:false}).setView([-8.65,115.17],11);tiles(map);mlayer=L.layerGroup().addTo(map)}
   mlayer.clearLayers();const pts=[];
   LIST.forEach(v=>{const p=pos(v);if(!p)return;pts.push([p[0],p[1]]);
     const m=L.marker([p[0],p[1]],{icon:L.divIcon({className:"",html:`<div class="mk${p[2]?"":" ap"}"></div>`,iconSize:[16,16],iconAnchor:[8,8]})})
-      .bindPopup(`<div class="pop" data-lot="${esc(v.lot)}"><img src="${pic(v.photo,500)}" data-alt="${pic2(v.photo,500)}" onerror="${imgErr}" alt=""><b>${esc(title(v))}</b><span>${esc(areaRu(v.area))} · ${esc(brTxt(v.br))}${p[2]?"":" · примерно"}</span></div>`,{minWidth:220});
+      .bindPopup(`<div class="pop" data-lot="${esc(v.lot)}"><img src="${pic(v.photo,500)}" data-alt="${pic2(v.photo,500)}" onerror="${imgErr}" alt=""><b>${esc(title(v))}</b><span>${esc(areaRu(v.area))} · ${esc(brTxt(v.br))}${p[2]?"":" · "+T("approx")}</span></div>`,{minWidth:220});
     m.addTo(mlayer)});
   map.off("popupopen");map.on("popupopen",e=>{const el=e.popup.getElement().querySelector(".pop");if(el)el.onclick=()=>openLB(ALL.find(v=>v.lot===el.dataset.lot))});
   setTimeout(()=>{map.invalidateSize();if(pts.length)map.fitBounds(pts,{padding:[40,40],maxZoom:14})},60);
@@ -300,12 +332,12 @@ let lb=null,mini=null;
 async function openLB(v){
   closeLB(true);
   lb=document.createElement("div");lb.className="lb";lb.setAttribute("role","dialog");lb.setAttribute("aria-modal","true");lb.setAttribute("aria-label",title(v));
-  lb.innerHTML=`<div class="lb-top"><div class="t"><small>${esc(areaRu(v.area))} · ${esc(v.lot)}</small><b>${esc(title(v))}</b></div><button class="x" aria-label="Закрыть">×</button></div>
+  lb.innerHTML=`<div class="lb-top"><div class="t"><small>${esc(areaRu(v.area))} · ${esc(v.lot)}</small><b>${esc(title(v))}</b></div><button class="x" aria-label="${T("close")}">×</button></div>
     <div class="lb-body"><div class="stage"><div class="track" id="track"><img alt="" src="${pic(v.photo,1800)}" data-alt="${pic2(v.photo,1800)}" onerror="${imgErr}"></div>
-      <button class="nav-b l" aria-label="Предыдущее фото">‹</button><button class="nav-b r" aria-label="Следующее фото">›</button><span class="ctr" id="ctr">1 / 1</span></div>
-      <aside class="side"><div class="box"><h4>О вилле</h4><div class="facts"><div><span>Район</span><b>${esc(areaRu(v.area))}</b></div><div><span>Спальни</span><b>${esc(brTxt(v.br))}</b></div><div><span>Аренда</span><b>${v.yearly?"от года":"помесячно"}</b></div><div><span>Номер</span><b>${esc(v.lot)}</b></div></div></div>
-        <div class="box"><h4>Фото</h4><div class="thumbs" id="thumbs"></div></div>
-        <div class="box"><h4>Расположение</h4><div id="mini"></div></div></aside></div>`;
+      <button class="nav-b l" aria-label="${T("prev")}">‹</button><button class="nav-b r" aria-label="${T("next")}">›</button><span class="ctr" id="ctr">1 / 1</span></div>
+      <aside class="side"><div class="box"><h4>${T("about")}</h4><div class="facts"><div><span>${T("area")}</span><b>${esc(areaRu(v.area))}</b></div><div><span>${T("beds")}</span><b>${esc(brTxt(v.br))}</b></div><div><span>${T("lease")}</span><b>${v.yearly?T("fromYear"):T("monthly")}</b></div><div><span>${T("ref")}</span><b>${esc(v.lot)}</b></div></div></div>
+        <div class="box"><h4>${T("photos")}</h4><div class="thumbs" id="thumbs"></div></div>
+        <div class="box"><h4>${T("location")}</h4><div id="mini"></div></div></aside></div>`;
   document.body.appendChild(lb);document.body.style.overflow="hidden";requestAnimationFrame(()=>lb.classList.add("open"));
   const tr=lb.querySelector("#track"),ctr=lb.querySelector("#ctr");
   const upd=()=>{const k=Math.round(tr.scrollLeft/tr.clientWidth),n=tr.children.length;ctr.textContent=`${k+1} / ${n}`;lb.querySelectorAll("#thumbs img").forEach((t,i)=>t.classList.toggle("on",i===k))};
@@ -320,7 +352,7 @@ async function openLB(v){
   try{
     const r=await fetch(API+"?api=photos&lot="+encodeURIComponent(v.lot));const j=await r.json();
     if(j.ok&&j.photos&&j.photos.length&&lb&&tr.isConnected){
-      tr.innerHTML=j.photos.map((id,i)=>`<img alt="${esc(title(v))} — фото ${i+1}" ${i>1?'loading="lazy"':""} src="${pic(id,1800)}" data-alt="${pic2(id,1800)}" onerror="${imgErr}">`).join("");
+      tr.innerHTML=j.photos.map((id,i)=>`<img alt="${esc(title(v))} — ${T("photo")} ${i+1}" ${i>1?'loading="lazy"':""} src="${pic(id,1800)}" data-alt="${pic2(id,1800)}" onerror="${imgErr}">`).join("");
       const th=lb.querySelector("#thumbs");th.innerHTML=j.photos.map((id,i)=>`<img alt="" src="${pic(id,160)}" data-alt="${pic2(id,160)}" onerror="${imgErr}" data-i="${i}">`).join("");
       th.onclick=e=>{const t=e.target.closest("[data-i]");if(t)tr.scrollTo({left:tr.clientWidth*+t.dataset.i,behavior:reduce?"auto":"smooth"})};
       upd();
@@ -348,7 +380,7 @@ document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
     const nAreas=buildFilters();
     countUp($("#s1"),ALL.length);countUp($("#s2"),nAreas);countUp($("#s3"),ALL.length);
     apply(false);
-  }catch(e){$("#count").textContent="Не удалось загрузить каталог. Обновите страницу чуть позже."}
+  }catch(e){$("#count").textContent=T("loadFail")}
 })();
 </script>
 </body>
