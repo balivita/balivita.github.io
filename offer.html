@@ -92,7 +92,6 @@ async function main(){
       <p class="lead">Листайте фото, смотрите расположение на карте и напишите, какой вариант посмотрим первым.</p></header>
     <div id="map" role="region" aria-label="Карта вилл"></div>
     <div class="list">${it.map(card).join("")}</div>
-    ${d.contact?`<div class="cta"><a href="https://t.me/${encodeURIComponent(d.contact)}" target="_blank" rel="noopener">Написать менеджеру в Telegram</a></div>`:""}
     <div class="foot">Цены указаны в индонезийских рупиях (IDR) за месяц аренды.</div>`;
   it.forEach((v,i)=>gallery(i,v));
   drawMap(it);
