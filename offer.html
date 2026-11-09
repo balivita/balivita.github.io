@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Виллы на Бали — подборка</title>
+<meta name="description" content="Подборка вилл на Бали: фото, цены и расположение на карте">
+<meta property="og:title" content="Подборка вилл на Бали 🌴">
+<meta property="og:description" content="Фото, цены и расположение на карте">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Onest:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  --bg:#F3F1EC; --surface:#FFFFFF; --ink:#13222A; --muted:#62747A; --line:#E2DED5;
+  --lagoon:#0E9E97; --lagoon-ink:#FFFFFF; --sun:#E59B2B; --chip:#ECE8DF; --shade:rgba(19,34,42,.09);
+  --f-display:"Unbounded","Onest",system-ui,sans-serif; --f-body:"Onest",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0C1519; --surface:#14232A; --ink:#E8F0EF; --muted:#93A6AB; --line:#25363E;
+  --lagoon:#2CC4B8; --lagoon-ink:#04201E; --sun:#F3B65A; --chip:#1C2E36; --shade:rgba(0,0,0,.35); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0C1519; --surface:#14232A; --ink:#E8F0EF; --muted:#93A6AB; --line:#25363E;
+  --lagoon:#2CC4B8; --lagoon-ink:#04201E; --sun:#F3B65A; --chip:#1C2E36; --shade:rgba(0,0,0,.35); color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:720px;margin:0 auto;padding:28px 0 56px;display:flex;flex-direction:column;gap:22px}
+.kicker{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--lagoon);font-weight:700}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,6.5vw,40px);line-height:1.08;letter-spacing:-.02em;margin:6px 0 8px;text-wrap:balance}
+.lead{color:var(--muted);margin:0;font-size:15.5px}
+#map{height:300px;border-radius:22px;overflow:hidden;background:var(--chip);box-shadow:0 10px 30px var(--shade);z-index:0}
+.list{display:flex;flex-direction:column;gap:22px}
+.card{background:var(--surface);border-radius:24px;overflow:hidden;box-shadow:0 10px 30px var(--shade)}
+.gal{position:relative}
+.track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;aspect-ratio:4/3;background:var(--chip)}
+.track::-webkit-scrollbar{display:none}
+.track img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:center}
+.num{position:absolute;top:12px;left:12px;width:34px;height:34px;border-radius:50%;background:var(--lagoon);color:var(--lagoon-ink);display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:15px;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+.cnt{position:absolute;bottom:12px;right:12px;background:rgba(0,0,0,.55);color:#fff;border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums}
+.arr{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.85);color:#13222A;font-size:18px;font-weight:700;cursor:pointer;display:none}
+.arr.l{left:10px}.arr.r{right:10px}
+@media (hover:hover){.gal:hover .arr{display:block}}
+.body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:10px}
+.where{font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.name{font-family:var(--f-display);font-weight:500;font-size:20px;line-height:1.2;margin:0;overflow-wrap:anywhere}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{background:var(--chip);border-radius:9px;padding:4px 10px;font-size:13px;font-weight:600}
+.tag.yr{color:var(--sun)}
+.price{font-family:var(--f-display);font-size:22px;font-weight:500;font-variant-numeric:tabular-nums}
+.price small{font-family:var(--f-body);font-size:13px;color:var(--muted);font-weight:500}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:0;border-radius:14px;padding:11px 14px;font:inherit;font-size:14px;font-weight:700;background:var(--chip);color:var(--ink);text-decoration:none;cursor:pointer}
+.btn:focus-visible{outline:2px solid var(--lagoon);outline-offset:2px}
+.cta{position:sticky;bottom:calc(14px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center}
+.cta a{background:var(--lagoon);color:var(--lagoon-ink);border-radius:18px;padding:16px 22px;font-weight:700;text-decoration:none;box-shadow:0 10px 30px rgba(14,158,151,.35)}
+.foot{color:var(--muted);font-size:13px;text-align:center}
+.state{text-align:center;color:var(--muted);padding:80px 10px}
+.mk{width:28px;height:28px;border-radius:50%;background:#0E9E97;color:#fff;display:grid;place-items:center;font:700 13px/1 "Onest",sans-serif;border:2px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.3)}
+.mk.ap{background:#fff;color:#0E9E97;border:2px dashed #0E9E97}
+.leaflet-popup-content{font-family:var(--f-body);margin:10px 12px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"><div class="state" id="state">Загружаю подборку…</div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const API="https://script.google.com/macros/s/AKfycbwCoOvCF13m4e02f9gu0vNkFDvCU2NS-KX3kXNbFHtW0g7zoKR8OOQg4ziWhJAzApWU/exec";
+const AREA_C={"Berawa":[-8.6575,115.1395],"Canggu":[-8.6482,115.1340],"Chemagi":[-8.6265,115.0880],"Jimbaran":[-8.7905,115.1610],"Nusa Dua":[-8.8010,115.2290],"Pererenan":[-8.6395,115.1235],"Sanur":[-8.6930,115.2610],"Seminyak":[-8.6905,115.1685],"Seseh":[-8.6335,115.1050],"Tumbak Bayuh":[-8.6225,115.1405],"Ubud":[-8.5069,115.2625],"Uluwatu":[-8.8290,115.0870],"Umalas":[-8.6610,115.1590],"Ungasan":[-8.8250,115.1660]};
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const idr=n=>Number(n||0).toLocaleString("ru-RU").replace(/\s/g," ");
+const word=n=>{const a=n%10,b=n%100;return (a===1&&b!==11)?"вилла":(a>=2&&a<=4&&(b<10||b>=20))?"виллы":"вилл"};
+const brTxt=br=>{const n=parseInt(br,10);if(!n)return br||"";return /\+/.test(br)?n+"+ спален":n+" "+(n===1?"спальня":n<5?"спальни":"спален")};
+const pic=(id,w)=>`https://lh3.googleusercontent.com/d/${id}=w${w}`;
+const pic2=(id,w)=>`https://drive.google.com/thumbnail?id=${id}&sz=w${w}`;
+const jit=(lot,k)=>{let h=7;for(const c of lot+k)h=(h*131+c.charCodeAt(0))%100003;return (h/100003-.5)*.012};
+
+async function main(){
+  const t=new URLSearchParams(location.search).get("t")||"";
+  let d;
+  try{const r=await fetch(API+"?api=offer&t="+encodeURIComponent(t));d=await r.json()}catch(e){}
+  if(!d||!d.ok||!d.items||!d.items.length){document.getElementById("state").textContent="Подборка не найдена. Попросите менеджера прислать ссылку ещё раз.";return}
+  const it=d.items, n=it.length;
+  const hello=d.client?`${esc(d.client)}, подобрали для вас`:"Подобрали для вас";
+  const app=document.getElementById("app");
+  app.innerHTML=`<header><div class="kicker">Виллы на Бали · помесячная аренда</div>
+      <h1>${hello} ${n} ${word(n)}</h1>
+      <p class="lead">Листайте фото, смотрите расположение на карте и напишите, какой вариант посмотрим первым.</p></header>
+    <div id="map" role="region" aria-label="Карта вилл"></div>
+    <div class="list">${it.map(card).join("")}</div>
+    ${d.contact?`<div class="cta"><a href="https://t.me/${encodeURIComponent(d.contact)}" target="_blank" rel="noopener">Написать менеджеру в Telegram</a></div>`:""}
+    <div class="foot">Цены указаны в индонезийских рупиях (IDR) за месяц аренды.</div>`;
+  it.forEach((v,i)=>gallery(i,v));
+  drawMap(it);
+}
+function card(v,i){
+  const ph=v.photos&&v.photos.length?v.photos:[];
+  return `<article class="card" id="v${i}">
+    <div class="gal">${ph.length?`<div class="track" id="tr${i}">${ph.map((id,k)=>`<img loading="${i<2&&k<2?"eager":"lazy"}" src="${pic(id,1400)}" data-alt="${pic2(id,1400)}" alt="${esc(v.name)} — фото ${k+1}" onerror="if(this.dataset.alt){this.src=this.dataset.alt;this.dataset.alt=''}else this.remove()">`).join("")}</div>`:`<div class="track"></div>`}
+      <span class="num">${i+1}</span>${ph.length>1?`<span class="cnt" id="c${i}">1 / ${ph.length}</span><button class="arr l" data-g="${i}" data-d="-1" aria-label="Предыдущее фото">‹</button><button class="arr r" data-g="${i}" data-d="1" aria-label="Следующее фото">›</button>`:""}</div>
+    <div class="body">
+      <div class="where">${esc(v.area)}</div>
+      <h2 class="name">${esc(v.name)}</h2>
+      <div class="tags"><span class="tag">${esc(brTxt(v.br))}</span>${v.yearly?'<span class="tag yr">при аренде на год</span>':""}</div>
+      <div class="price">${idr(v.price)} <small>IDR / месяц</small></div>
+      <div class="acts"><button class="btn" data-show="${i}">📍 На карте</button>${v.maps?`<a class="btn" href="${esc(v.maps)}" target="_blank" rel="noopener">Открыть в Google Maps</a>`:""}</div>
+    </div></article>`;
+}
+function gallery(i){
+  const tr=document.getElementById("tr"+i),c=document.getElementById("c"+i);if(!tr||!c)return;
+  tr.addEventListener("scroll",()=>{const k=Math.round(tr.scrollLeft/tr.clientWidth);c.textContent=`${k+1} / ${tr.children.length}`},{passive:true});
+}
+document.addEventListener("click",e=>{
+  const a=e.target.closest("[data-g]");if(a){const tr=document.getElementById("tr"+a.dataset.g);tr.scrollBy({left:tr.clientWidth*+a.dataset.d,behavior:"smooth"});return}
+  const s=e.target.closest("[data-show]");if(s&&window._mk){const m=window._mk[+s.dataset.show];if(m){document.getElementById("map").scrollIntoView({behavior:"smooth",block:"center"});setTimeout(()=>{window._map.setView(m.getLatLng(),15);m.openPopup()},350)}}
+});
+function drawMap(it){
+  if(!window.L){document.getElementById("map").hidden=true;return}
+  const map=L.map("map",{scrollWheelZoom:false}).setView([-8.65,115.17],11);window._map=map;
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(map);
+  const pts=[];window._mk=[];
+  it.forEach((v,i)=>{let p=v.lat&&v.lng?[v.lat,v.lng]:null,ap=false;
+    if(!p&&AREA_C[v.area]){const c=AREA_C[v.area];p=[c[0]+jit(v.lot,"a"),c[1]+jit(v.lot,"b")];ap=true}
+    if(!p){window._mk.push(null);return}
+    const m=L.marker(p,{icon:L.divIcon({className:"",html:`<div class="mk${ap?" ap":""}">${i+1}</div>`,iconSize:[28,28],iconAnchor:[14,14]})})
+      .bindPopup(`<b>${i+1}. ${esc(v.name)}</b><br>${esc(v.area)} · ${idr(v.price)} IDR/мес${ap?"<br><small>расположение примерное</small>":""}<br><a href="#v${i}">К фото ↓</a>`).addTo(map);
+    window._mk.push(m);pts.push(p)});
+  if(pts.length>1)map.fitBounds(pts,{padding:[34,34],maxZoom:14});else if(pts.length)map.setView(pts[0],14);
+}
+main();
+</script>
+</body>
+</html>
