@@ -112,6 +112,39 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 .acts a,.acts button{background:var(--chip);border-radius:14px;padding:12px 6px;font-weight:700;font-size:13px;text-align:center;color:var(--ink);text-decoration:none}
 .acts .off{opacity:.4;pointer-events:none}
 .note{font-size:13px;color:var(--muted);line-height:1.45}
+.topr{display:flex;gap:8px;align-items:center}
+.plus{width:40px;height:40px;border-radius:12px;background:var(--lagoon);color:var(--lagoon-ink);font-size:22px;font-weight:700;line-height:1;box-shadow:0 4px 12px var(--shade)}
+.go2{margin-top:8px;width:100%;background:var(--chip);border-radius:16px;padding:13px;font-weight:700;font-size:15px}
+.go2:disabled{opacity:.45}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--chip);border-radius:12px;padding:3px}
+.seg button{border-radius:10px;padding:8px;font-weight:700;font-size:13.5px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 2px 6px var(--shade)}
+#map{height:max(360px,calc(var(--tg-viewport-stable-height,100vh) - 300px));border-radius:20px;overflow:hidden;background:var(--chip);z-index:0}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);margin-top:8px}
+.legend .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--lagoon);margin-right:5px;vertical-align:-1px}
+.legend .dot.ap{background:transparent;border:2px dashed var(--lagoon);width:9px;height:9px}
+.pop{display:flex;flex-direction:column;gap:3px;font-family:var(--f-body);color:#0F2027}
+.pop img{width:100%;height:110px;object-fit:cover;border-radius:10px;margin-bottom:4px}
+.pop b{font-size:14px;line-height:1.25}
+.pop span{font-size:12px;color:#5D7178}
+.pop .pp{font-size:14px;color:#0F2027;font-weight:700}
+.pop .pb{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.pop .pb button{background:#E3EEEE;border-radius:9px;padding:8px 4px;font-weight:700;font-size:12px;color:#0F2027}
+.pop .pb button.on{background:#0E9E97;color:#fff}
+.leaflet-popup-content{margin:10px 12px}
+.leaflet-popup-content-wrapper{border-radius:14px}
+.field select,.field input[type=tel],.field input[type=url]{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px 12px;width:100%;-webkit-appearance:none;appearance:none}
+.field .sub{font-weight:500;color:var(--muted);font-size:12px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.check{display:flex;gap:10px;align-items:center;font-size:14px;font-weight:600}
+.check input{width:20px;height:20px;accent-color:var(--lagoon)}
+.shots{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.shot{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--chip)}
+.shot img{width:100%;height:100%;object-fit:cover;display:block}
+.shot .rm{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:13px;font-weight:700}
+.shot .main{position:absolute;left:3px;bottom:3px;background:var(--lagoon);color:var(--lagoon-ink);font-size:10px;font-weight:700;border-radius:6px;padding:2px 5px}
+.addph{display:block;text-align:center;background:var(--chip);border:1.5px dashed var(--line);border-radius:14px;padding:14px;font-weight:700;color:var(--ink);cursor:pointer}
+.req{color:var(--sun)}
 [hidden]{display:none!important}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style>
@@ -120,7 +153,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 <div class="app">
   <div class="top">
     <div class="brand">Baza Vita<small id="sub">Загружаю базу…</small></div>
-    <form class="lotsearch" id="lotf"><input id="loti" inputmode="numeric" placeholder="#LOT" aria-label="Номер LOT"><button>Найти</button></form>
+    <div class="topr"><form class="lotsearch" id="lotf"><input id="loti" inputmode="numeric" placeholder="#LOT" aria-label="Номер LOT"><button>Найти</button></form><button class="plus" id="plus" aria-label="Добавить виллу" title="Добавить виллу">+</button></div>
   </div>
 
   <section id="search">
@@ -132,6 +165,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
         <div class="col"><label>До, млн</label><div class="wheel" id="w-price"><ul></ul></div></div>
       </div>
       <button class="go" id="go" disabled>Загружаю…</button>
+      <button class="go2" id="gomap" disabled>🗺 Показать на карте</button>
       <div class="hint">Крутите колёсики, число вилл обновляется сразу</div>
     </div>
   </section>
@@ -145,7 +179,9 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
         <button class="chip" data-f="phone" aria-pressed="false">С телефоном</button>
         <button class="chip" data-f="photo" aria-pressed="false">С фото</button>
       </div>
+      <div class="seg" id="seg"><button data-v="list" aria-pressed="true">Список</button><button data-v="map" aria-pressed="false">Карта</button></div>
       <div class="list" id="list"></div>
+      <div id="mapbox" hidden><div id="map"></div><div class="legend" id="legend"></div></div>
     </div>
   </section>
 </div>
@@ -169,7 +205,7 @@ const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 const PRICES=[10,15,20,25,30,40,50,70,100,150,0];
 const BRS=["Любые","1","2","3","4","5+"];
 let V=[];
-const st={area:"Все районы",br:"Любые",max:0,sortAsc:true,f:{monthly:false,private:false,phone:false,photo:false},pick:new Map(),custom:{},markup:20,client:"",shown:20};
+const st={view:"list",area:"Все районы",br:"Любые",max:0,sortAsc:true,f:{monthly:false,private:false,phone:false,photo:false},pick:new Map(),custom:{},markup:20,client:"",shown:20};
 const mln=p=>(Math.round(p/1e5)/10).toString().replace(".",",");
 const word=n=>{const a=n%10,b=n%100;return (a===1&&b!==11)?"вилла":(a>=2&&a<=4&&(b<10||b>=20))?"виллы":"вилл"};
 const brN=v=>{const n=parseInt(v.br,10)||0;return /\+/.test(v.br)?Math.max(n,5):n};
@@ -195,7 +231,7 @@ function wheel(el,items,label,initial,onPick){
   el.addEventListener("scroll",()=>{paint();const r=Math.round(el.scrollTop/H);if(r!==last){last=r;hap("sel")}clearTimeout(t);t=setTimeout(()=>{const n=Math.round(el.scrollTop/H);if(n!==idx){idx=n;onPick(items[n]);updCount()}},90)},{passive:true});
   lis.forEach((li,i)=>li.addEventListener("click",()=>el.scrollTo({top:i*H,behavior:"smooth"})));
 }
-function updCount(){const n=found().length;$("#go").textContent=n?`Показать ${n} ${word(n)}`:"Ничего не найдено";$("#go").disabled=!n}
+function updCount(){const n=found().length;$("#go").textContent=n?`Показать ${n} ${word(n)}`:"Ничего не найдено";$("#go").disabled=!n;$("#gomap").disabled=!n}
 
 function card(v){
   const on=st.pick.has(v.lot),h=HUE(v.area);
@@ -207,15 +243,20 @@ function card(v){
       <div class="row"><div class="price">${mln(v.price)} млн <small>/ мес</small></div>
       <button class="add" data-add="${esc(v.lot)}" aria-pressed="${on}">${on?"✓ В подборке":"+ В подборку"}</button></div></div></article>`;
 }
-function renderList(){
+function renderList(fit){
+  const isMap=st.view==="map";$("#list").hidden=isMap;$("#mapbox").hidden=!isMap;$("#sort").hidden=isMap;
+  $("#seg").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===st.view));
   const r=found(),part=r.slice(0,st.shown);
   $("#rtitle").textContent=`${st.area==="Все районы"?"Все районы":st.area} · ${st.br==="Любые"?"любые спальни":st.br+"BR"} · ${r.length} ${word(r.length)}`;
   $("#list").innerHTML=r.length?part.map(card).join("")+(r.length>part.length?`<button class="more" id="more">Ещё ${Math.min(20,r.length-part.length)} из ${r.length-part.length}</button>`:""):`<div class="empty">Под эти фильтры ничего нет. Снимите фильтр или поднимите бюджет.</div>`;
   const m=$("#more");if(m)m.onclick=()=>{st.shown+=20;renderList()};
+  if(isMap)renderMap(fit!==false);
 }
 function show(scr){$("#search").hidden=scr!=="search";$("#results").hidden=scr!=="results";$("#back").hidden=scr!=="results";window.scrollTo(0,0);
   if(tg&&tg.BackButton){scr==="results"?tg.BackButton.show():tg.BackButton.hide()}}
-$("#go").onclick=()=>{st.shown=20;renderList();show("results");hap("light")};
+$("#go").onclick=()=>{st.view="list";st.shown=20;show("results");renderList();hap("light")};
+$("#gomap").onclick=()=>{st.view="map";st.shown=20;show("results");renderList();hap("light")};
+$("#seg").onclick=e=>{const b=e.target.closest("button");if(!b||b.dataset.v===st.view)return;st.view=b.dataset.v;renderList();hap("sel")};
 $("#back").onclick=()=>{updCount();show("search")};
 if(tg&&tg.BackButton)tg.BackButton.onClick(()=>{if(!$("#sheet").hidden)closeSheet();else{updCount();show("search")}});
 $("#sort").onclick=()=>{st.sortAsc=!st.sortAsc;$("#sort").textContent=st.sortAsc?"Сначала дешевле":"Сначала дороже";renderList()};
@@ -248,14 +289,88 @@ function openDetail(lot){
   $("#dAdd").onclick=()=>{if(!st.pick.has(lot))togglePick(lot);if(!$("#results").hidden)renderList();closeSheet();toast("Добавлено в подборку")};
 }
 
+/* ---------- карта ---------- */
+const AREA_C={"Berawa":[-8.6575,115.1395],"Canggu":[-8.6482,115.1340],"Chemagi":[-8.6265,115.0880],"Jimbaran":[-8.7905,115.1610],"Nusa Dua":[-8.8010,115.2290],"Pererenan":[-8.6395,115.1235],"Sanur":[-8.6930,115.2610],"Seminyak":[-8.6905,115.1685],"Seseh":[-8.6335,115.1050],"Tumbak Bayuh":[-8.6225,115.1405],"Ubud":[-8.5069,115.2625],"Uluwatu":[-8.8290,115.0870],"Umalas":[-8.6610,115.1590],"Ungasan":[-8.8250,115.1660]};
+let leafletP=null,map=null,layer=null;
+function loadLeaflet(){if(leafletP)return leafletP;leafletP=new Promise((res,rej)=>{const l=document.createElement("link");l.rel="stylesheet";l.href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css";document.head.appendChild(l);const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js";s.onload=res;s.onerror=()=>{leafletP=null;rej()};document.head.appendChild(s)});return leafletP}
+const jit=(lot,k)=>{let h=7;for(const c of lot+k)h=(h*131+c.charCodeAt(0))%100003;return (h/100003-.5)*.014};
+function pos(v){if(v.lat&&v.lng)return[v.lat,v.lng,true];const c=AREA_C[v.area];return c?[c[0]+jit(v.lot,"a"),c[1]+jit(v.lot,"b"),false]:null}
+function popupHtml(v,exact){const on=st.pick.has(v.lot);return `<div class="pop">${v.photo?`<img src="${img(v)}" alt="" onerror="this.remove()">`:""}<b>${esc(v.name)}</b><span>${esc(v.lot)} · ${esc(v.area)} · ${esc(v.br)}${exact?"":" · место примерное"}</span><span class="pp">${mln(v.price)} млн / мес</span><div class="pb"><button data-open="${esc(v.lot)}">Подробнее</button><button data-add="${esc(v.lot)}" class="${on?"on":""}">${on?"✓ В подборке":"+ В подборку"}</button></div></div>`}
+async function renderMap(fit){
+  try{await loadLeaflet()}catch(e){$("#legend").textContent="Карта не загрузилась — проверьте интернет";return}
+  if(!map){map=L.map("map",{zoomControl:true}).setView([-8.65,115.17],11);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(map);
+    layer=L.layerGroup().addTo(map);
+    map.on("popupopen",ev=>{const el=ev.popup.getElement();
+      el.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>{map.closePopup();openDetail(b.dataset.open)});
+      el.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{togglePick(b.dataset.add);map.closePopup();renderMap(false)});});}
+  layer.clearLayers();const r=found(),pts=[];let approx=0;
+  r.forEach(v=>{const p=pos(v);if(!p)return;if(!p[2])approx++;const on=st.pick.has(v.lot);
+    L.circleMarker([p[0],p[1]],{radius:p[2]?8:7,weight:2,color:on?"#B9771A":"#0B6F6A",fillColor:on?"#F0A93B":"#0E9E97",fillOpacity:p[2]?.9:.25,dashArray:p[2]?null:"3 3"})
+      .bindPopup(popupHtml(v,p[2]),{maxWidth:240,minWidth:200}).addTo(layer);pts.push([p[0],p[1]])});
+  if(fit&&pts.length)map.fitBounds(pts,{padding:[28,28],maxZoom:14});
+  $("#legend").innerHTML=`<span><i class="dot"></i>точный адрес</span><span><i class="dot ap"></i>примерно, по району</span><span>${r.length} ${word(r.length)}${approx?` · ${approx} без точки`:""}</span>`;
+  setTimeout(()=>map.invalidateSize(),60);
+}
+
+/* ---------- добавить виллу ---------- */
+const AREAS_ALL=["Berawa","Canggu","Chemagi","Jimbaran","Nusa Dua","Pererenan","Sanur","Seminyak","Seseh","Tumbak Bayuh","Ubud","Uluwatu","Umalas","Ungasan"];
+let shots=[];
+function shrink(file){return new Promise(res=>{const u=URL.createObjectURL(file);const im=new Image();
+  im.onload=()=>{const k=Math.min(1,1600/Math.max(im.width,im.height));const c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL("image/jpeg",.82))};
+  im.onerror=()=>{URL.revokeObjectURL(u);res(null)};im.src=u})}
+function paintShots(){$("#shots").innerHTML=shots.map((d,i)=>`<div class="shot"><img src="${d}" alt="" data-main="${i}">${i?"":'<span class="main">Главное</span>'}<button class="rm" data-rmph="${i}" aria-label="Убрать фото">×</button></div>`).join("");
+  $("#shots").querySelectorAll("[data-rmph]").forEach(b=>b.onclick=()=>{shots.splice(+b.dataset.rmph,1);paintShots()});
+  $("#shots").querySelectorAll("[data-main]").forEach(b=>b.onclick=()=>{const i=+b.dataset.main;if(i){shots.unshift(shots.splice(i,1)[0]);paintShots();hap("sel")}});
+  $("#phl").textContent=shots.length?`＋ Ещё фото (${shots.length}/10)`:"＋ Выбрать фото из галереи"}
+function openAdd(){
+  shots=[];
+  openSheet(`<h3>Новая вилла</h3>
+    <div class="field">Фото <span class="sub">до 10 · нажмите на фото, чтобы сделать главным</span><div class="shots" id="shots"></div>
+      <label class="addph"><input type="file" id="ph" accept="image/*" multiple hidden><span id="phl"></span></label></div>
+    <label class="field">Название<input type="text" id="a-name" autocomplete="off" placeholder="Например, Villa Melati"></label>
+    <div class="two"><label class="field">Район <span class="req">*</span><select id="a-area"><option value="">Выберите</option>${AREAS_ALL.map(a=>`<option>${a}</option>`).join("")}</select></label>
+      <label class="field">Спальни <span class="req">*</span><select id="a-br"><option value="">—</option><option>1BR</option><option>2BR</option><option>3BR</option><option>4BR</option><option>5BR+</option></select></label></div>
+    <div class="two"><label class="field">Цена / мес, млн <span class="req">*</span><input type="text" inputmode="decimal" id="a-price" placeholder="35"></label>
+      <label class="field">Кто сдаёт<select id="a-kind"><option>Частное</option><option>Агентство</option></select></label></div>
+    <label class="check"><input type="checkbox" id="a-year"> Сдаётся только на год</label>
+    <label class="field">Телефон владельца / агента<input type="tel" id="a-phone" placeholder="+62 812 …"></label>
+    <label class="field">Ссылка Google Maps<input type="url" id="a-maps" placeholder="https://maps.app.goo.gl/…"></label>
+    <label class="field">Заметка<input type="text" id="a-notes" autocomplete="off" placeholder="Бассейн, 5 минут до пляжа…"></label>
+    <label class="field">Источник<input type="url" id="a-src" placeholder="Ссылка на объявление (необязательно)"></label>
+    <button class="send" id="a-save">Добавить в базу</button>`);
+  paintShots();
+  $("#ph").onchange=async e=>{const files=[...e.target.files].slice(0,10-shots.length);e.target.value="";if(!files.length)return;$("#phl").textContent="Обрабатываю фото…";
+    for(const f of files){const d=await shrink(f);if(d)shots.push(d)}paintShots()};
+  $("#a-save").onclick=saveVilla;
+}
+async function saveVilla(){
+  if(!initData){toast("Откройте приложение через бота в Telegram");return}
+  const g=id=>$("#"+id).value.trim();
+  const price=parseFloat(g("a-price").replace(",",".").replace(/[^\d.]/g,""));
+  if(!shots.length)return toast("Добавьте хотя бы одно фото");
+  if(!g("a-area"))return toast("Выберите район");
+  if(!g("a-br"))return toast("Выберите количество спален");
+  if(!(price>0))return toast("Укажите цену в месяц");
+  const notes=[g("a-kind"),$("#a-year").checked?"только год":"",g("a-notes")].filter(Boolean).join(" · ");
+  const b=$("#a-save");b.disabled=true;b.textContent="Загружаю фото… до минуты";
+  try{
+    const r=await fetch(API,{method:"POST",body:JSON.stringify({action:"addVilla",initData,photos:shots,
+      villa:{name:g("a-name"),area:g("a-area"),br:g("a-br"),price:Math.round(price*1e6),phone:g("a-phone"),maps:g("a-maps"),notes,src:g("a-src")}})});
+    const j=await r.json();
+    if(j.ok){hap("success");closeSheet();toast(`Готово: вилла ${j.lot} в базе`);setTimeout(()=>location.reload(),1800)}
+    else{toast(j.error==="auth"?"Откройте через бота в Telegram":(j.error||"Не получилось"));b.disabled=false;b.textContent="Попробовать ещё раз"}
+  }catch(e){toast("Нет связи с базой. Попробуйте ещё раз");b.disabled=false;b.textContent="Попробовать ещё раз"}
+}
+$("#plus").onclick=openAdd;
+
 const autoP=v=>Math.round(v.price*(1+st.markup/100)/5e5)*5e5;
 const cp=v=>st.custom[v.lot]>0?st.custom[v.lot]:autoP(v);
 const idr=n=>n.toLocaleString("ru-RU").replace(/ /g," ");
 function offerText(){
   const list=[...st.pick.values()];
-  return `Здравствуйте${st.client?", "+st.client:""}! Подобрала для вас ${list.length} ${word(list.length)} на Бали 🌴\n\n`+
-    list.map((v,i)=>`${i+1}. ${v.name}\n📍 ${v.area} · ${v.br}\n💰 ${idr(cp(v))} IDR / месяц${v.yearly?" (при аренде на год)":""}${v.folder?"\n📷 Фото: "+v.folder:""}${v.maps?"\n🗺 Карта: "+v.maps:""}`).join("\n\n")+
-    `\n\nКакой вариант посмотрим первым?`;
+  return `Здравствуйте${st.client?", "+st.client:""}! Подобрала для вас ${list.length} ${word(list.length)} на Бали 🌴\n\nФото, цены и расположение на карте — по ссылке:\n🔗 ссылка появится после отправки\n\nКакой вариант посмотрим первым?\n\nНа странице: `+
+    list.map((v,i)=>`${i+1}) ${v.area} · ${v.br} · ${mln(cp(v))} млн`).join("; ");
 }
 function openOffer(){
   openSheet(`<h3>Предложение клиенту</h3>
@@ -263,7 +378,7 @@ function openOffer(){
     <div class="field">Наценка<div class="mk"><input type="range" id="mk" min="0" max="50" step="5" value="${st.markup}"><output id="mko"></output></div></div>
     <div class="lines" id="lines"></div>
     <div class="msg-h tip">Цену для клиента можно поправить вручную (в млн IDR). Пустое поле — цена по наценке.</div>
-    <div class="msg-h">Бот пришлёт вам альбом фото и этот текст — перешлите его клиенту</div>
+    <div class="msg-h">Бот пришлёт альбом и сообщение со ссылкой на страницу-подборку — перешлите клиенту</div>
     <div class="msg" id="msg"></div>
     <button class="send" id="send"></button>`);
   const paint=()=>{const list=[...st.pick.values()];
