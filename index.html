@@ -526,6 +526,8 @@ async function load(){
     $("#sub").textContent=`${V.length} ${word(V.length)} в базе`;
     try{const p=JSON.parse(localStorage.getItem("bv_pick")||"[]");p.forEach(l=>{const v=V.find(x=>x.lot===l);if(v)st.pick.set(l,v)});const m=localStorage.getItem("bv_mk");if(m!==null)st.markup=+m;st.custom=JSON.parse(localStorage.getItem("bv_cp")||"{}")||{}}catch(e){}
     updBasket();updCount();
+    const op=new URLSearchParams(location.search).get("open");
+    if(op==="map"){st.view="map";show("results");renderList()}else if(op==="add")openAdd();else if(op==="link")openLinkCheck("");
   }catch(e){$("#sub").textContent="Нет связи с базой";$("#go").textContent="Обновите позже"}
 }
 load();
