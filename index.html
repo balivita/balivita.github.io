@@ -153,7 +153,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 <div class="app">
   <div class="top">
     <div class="brand">Baza Vita<small id="sub">Загружаю базу…</small></div>
-    <div class="topr"><form class="lotsearch" id="lotf"><input id="loti" inputmode="numeric" placeholder="#LOT" aria-label="Номер LOT"><button>Найти</button></form><button class="plus" id="plus" aria-label="Добавить виллу" title="Добавить виллу">+</button></div>
+    <div class="topr"><form class="lotsearch" id="lotf"><input id="loti" inputmode="numeric" enterkeyhint="search" placeholder="#LOT" aria-label="Номер LOT"><button>Найти</button></form><button class="plus" id="plus" aria-label="Добавить виллу" title="Добавить виллу">+</button></div>
   </div>
 
   <section id="search">
@@ -262,12 +262,17 @@ if(tg&&tg.BackButton)tg.BackButton.onClick(()=>{if(!$("#sheet").hidden)closeShee
 $("#sort").onclick=()=>{st.sortAsc=!st.sortAsc;$("#sort").textContent=st.sortAsc?"Сначала дешевле":"Сначала дороже";renderList()};
 $("#chips").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;const k=b.dataset.f;st.f[k]=!st.f[k];b.setAttribute("aria-pressed",st.f[k]);st.shown=20;renderList();hap("sel")};
 $("#list").onclick=e=>{const a=e.target.closest("[data-add]");if(a){togglePick(a.dataset.add);renderList();return}const o=e.target.closest("[data-open]");if(o)openDetail(o.dataset.open)};
-$("#lotf").onsubmit=e=>{e.preventDefault();const n=parseInt(($("#loti").value||"").replace(/\D/g,""),10);if(!n)return;const lot="#"+String(n).padStart(3,"0");if(V.find(v=>v.lot===lot))openDetail(lot);else toast(`LOT ${lot} не найден`)};
+$("#lotf").onsubmit=e=>{e.preventDefault();hideKb();const n=parseInt(($("#loti").value||"").replace(/\D/g,""),10);if(!n)return;const lot="#"+String(n).padStart(3,"0");if(V.find(v=>v.lot===lot))openDetail(lot);else toast(`LOT ${lot} не найден`)};
 function togglePick(lot){st.pick.has(lot)?st.pick.delete(lot):st.pick.set(lot,V.find(v=>v.lot===lot));updBasket();save();hap("light")}
 function updBasket(){const n=st.pick.size;$("#bcnt").textContent=n;$("#basket").disabled=!n}
 
-function openSheet(html){$("#sheetIn").innerHTML='<div class="grab"></div>'+html;$("#scrim").hidden=false;$("#sheet").hidden=false;if(tg&&tg.BackButton)tg.BackButton.show()}
-function closeSheet(){$("#scrim").hidden=true;$("#sheet").hidden=true;if(tg&&tg.BackButton&&$("#results").hidden)tg.BackButton.hide()}
+function openSheet(html){$("#sheetIn").innerHTML='<div class="grab"></div>'+html;$("#sheetIn").querySelectorAll("input:not([type=checkbox]):not([type=file]):not([type=range])").forEach(i=>i.setAttribute("enterkeyhint","done"));$("#scrim").hidden=false;$("#sheet").hidden=false;if(tg&&tg.BackButton)tg.BackButton.show()}
+function closeSheet(){hideKb();$("#scrim").hidden=true;$("#sheet").hidden=true;if(tg&&tg.BackButton&&$("#results").hidden)tg.BackButton.hide()}
+function hideKb(){const a=document.activeElement;if(a&&a.matches&&a.matches("input,textarea,select"))a.blur();try{tg&&tg.hideKeyboard&&tg.hideKeyboard()}catch(e){}}
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.matches("input:not([type=checkbox]),select")&&!e.target.closest("#lotf")){e.preventDefault();hideKb()}});
+document.addEventListener("touchstart",e=>{const a=document.activeElement;if(a&&a.matches&&a.matches("input,textarea")&&!e.target.closest("input,textarea,select,label,button"))hideKb()},{passive:true});
+document.addEventListener("mousedown",e=>{const a=document.activeElement;if(a&&a.matches&&a.matches("input,textarea")&&!e.target.closest("input,textarea,select,label,button"))hideKb()});
+$("#sheet").addEventListener("scroll",()=>{const a=document.activeElement;if(a&&a.matches&&a.matches("input")&&$("#sheet").contains(a)&&Math.abs($("#sheet").scrollTop-(window._st||0))>40)hideKb();window._st=$("#sheet").scrollTop},{passive:true});
 $("#scrim").onclick=closeSheet;document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet()});
 const open=u=>{if(!u)return;tg&&tg.openLink?tg.openLink(u):window.open(u,"_blank")};
 
@@ -345,6 +350,7 @@ function openAdd(){
   $("#a-save").onclick=saveVilla;
 }
 async function saveVilla(){
+  hideKb();
   if(!initData){toast("Откройте приложение через бота в Telegram");return}
   const g=id=>$("#"+id).value.trim();
   const price=parseFloat(g("a-price").replace(",",".").replace(/[^\d.]/g,""));
@@ -399,6 +405,7 @@ function openOffer(){
   $("#send").onclick=sendOffer;
 }
 async function sendOffer(){
+  hideKb();
   if(!initData){toast("Откройте приложение через бота в Telegram, чтобы отправить");return}
   const b=$("#send");b.disabled=true;b.textContent="Отправляю…";
   try{
