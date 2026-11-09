@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bali Vita — виллы на Бали</title>
+<meta name="description" content="Виллы на Бали для долгосрочной аренды: Canggu, Pererenan, Uluwatu, Ubud и другие районы">
+<meta property="og:title" content="Bali Vita — виллы на Бали">
+<meta property="og:description" content="Каталог вилл для долгосрочной аренды: фото, районы и карта">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Onest:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  --bg:#0A1215; --bg2:#0F1B20; --surface:#13232A; --ink:#EEF4F2; --muted:#93A7AC; --line:rgba(238,244,242,.12);
+  --lagoon:#2CC4B8; --lagoon-d:#0E9E97; --sun:#F3B65A; --coral:#F07B5F; --glass:rgba(10,18,21,.62);
+  --f-display:"Unbounded","Onest",system-ui,sans-serif; --f-body:"Onest",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --ease:cubic-bezier(.2,.8,.2,1);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font-family:var(--f-body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img{display:block;max-width:100%}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--lagoon);outline-offset:3px;border-radius:8px}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* ---------- hero ---------- */
+.hero{position:relative;height:100svh;min-height:560px;overflow:hidden;display:flex;align-items:flex-end;isolation:isolate}
+.slides{position:absolute;inset:0;z-index:-2}
+.slides img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.12);transition:opacity 1.6s ease,transform 9s linear}
+.slides img.on{opacity:1;transform:scale(1)}
+.hero::before{content:"";position:absolute;inset:0;z-index:-1;background:
+  radial-gradient(120% 80% at 50% 110%,rgba(10,18,21,.98) 20%,rgba(10,18,21,.55) 55%,rgba(10,18,21,.15) 100%),
+  linear-gradient(180deg,rgba(10,18,21,.55),transparent 30%)}
+.glow{position:absolute;width:520px;height:520px;border-radius:50%;pointer-events:none;z-index:-1;background:radial-gradient(circle,rgba(44,196,184,.28),transparent 65%);transform:translate(-50%,-50%);left:50%;top:40%;transition:left .6s var(--ease),top .6s var(--ease);mix-blend-mode:screen}
+.nav{position:absolute;top:0;left:0;right:0;z-index:3;padding-top:max(18px,env(safe-area-inset-top,0px))}
+.nav .wrap{display:flex;justify-content:space-between;align-items:center}
+.logo{font-family:var(--f-display);font-weight:800;letter-spacing:.02em;font-size:18px}
+.logo b{color:var(--lagoon)}
+.nav a{color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;padding:9px 14px;border:1px solid var(--line);border-radius:999px;backdrop-filter:blur(10px);background:rgba(10,18,21,.3)}
+.hero-in{padding-bottom:clamp(56px,10vh,110px);width:100%}
+.kicker{display:inline-flex;gap:8px;align-items:center;font-size:12.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--lagoon);font-weight:700}
+.kicker::before{content:"";width:28px;height:1.5px;background:currentColor}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(44px,11vw,128px);line-height:.92;letter-spacing:-.035em;margin:16px 0 18px;text-wrap:balance}
+h1 .ln{display:block;overflow:hidden}
+h1 .ln span{display:inline-block;transform:translateY(105%);animation:rise 1.1s var(--ease) forwards}
+h1 .ln:nth-child(2) span{animation-delay:.12s;color:transparent;-webkit-text-stroke:1.5px var(--ink)}
+@keyframes rise{to{transform:none}}
+.lead{max-width:520px;color:#C9D6D6;font-size:clamp(15px,2vw,18px);margin:0 0 26px;opacity:0;animation:fade 1s .5s forwards}
+@keyframes fade{to{opacity:1}}
+.stats{display:flex;gap:clamp(20px,5vw,56px);opacity:0;animation:fade 1s .7s forwards}
+.stat b{display:block;font-family:var(--f-display);font-weight:600;font-size:clamp(26px,4.5vw,40px);font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--muted)}
+.cue{position:absolute;right:max(16px,env(safe-area-inset-right,0px));bottom:28px;writing-mode:vertical-rl;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:10px}
+.cue::after{content:"";width:1.5px;height:56px;background:linear-gradient(var(--lagoon),transparent);animation:drip 1.8s infinite}
+@keyframes drip{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* ---------- marquee ---------- */
+.marq{border-block:1px solid var(--line);overflow:hidden;padding:16px 0;background:var(--bg2)}
+.marq-in{display:flex;gap:44px;width:max-content;animation:marq 38s linear infinite;font-family:var(--f-display);font-weight:600;font-size:clamp(18px,3vw,26px);text-transform:uppercase;letter-spacing:.02em;color:var(--muted)}
+.marq-in span{display:flex;align-items:center;gap:44px;white-space:nowrap}
+.marq-in span::after{content:"✦";color:var(--lagoon);font-size:.7em}
+@keyframes marq{to{transform:translateX(-50%)}}
+
+/* ---------- filters ---------- */
+.bar{position:sticky;top:0;z-index:20;background:var(--glass);backdrop-filter:blur(18px) saturate(1.3);-webkit-backdrop-filter:blur(18px) saturate(1.3);border-bottom:1px solid var(--line);transition:box-shadow .3s}
+.bar.stuck{box-shadow:0 10px 40px rgba(0,0,0,.4)}
+.bar .wrap{display:flex;flex-direction:column;gap:10px;padding-top:12px;padding-bottom:12px}
+.row{display:flex;gap:8px;align-items:center;overflow-x:auto;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 92%,transparent);mask-image:linear-gradient(90deg,#000 92%,transparent)}
+.row::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:13.5px;font-weight:600;color:#D5E0E0;transition:background .25s,color .25s,border-color .25s,transform .2s}
+.chip small{color:var(--muted);font-weight:500;margin-left:4px}
+.chip:hover{border-color:rgba(238,244,242,.35)}
+.chip:active{transform:scale(.96)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip[aria-pressed="true"] small{color:#4b5d61}
+.row2{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.count{font-size:13.5px;color:var(--muted);white-space:nowrap}
+.count b{color:var(--ink);font-variant-numeric:tabular-nums}
+.seg{display:flex;background:rgba(238,244,242,.07);border-radius:12px;padding:3px;flex:none}
+.seg button{padding:7px 14px;border-radius:9px;font-size:13px;font-weight:700;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--lagoon);color:#03201E}
+
+/* ---------- grid ---------- */
+main{padding:28px 0 80px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:clamp(14px,2vw,22px)}
+.card{position:relative;border-radius:22px;overflow:hidden;background:var(--surface);aspect-ratio:4/5;cursor:pointer;transform-style:preserve-3d;
+  opacity:0;transform:translateY(40px) scale(.97);transition:opacity .8s var(--ease),transform .8s var(--ease),box-shadow .4s}
+.card.in{opacity:1;transform:none}
+.card:hover{box-shadow:0 30px 60px -20px rgba(0,0,0,.7),0 0 0 1px rgba(44,196,184,.35)}
+.card .im{position:absolute;inset:0;overflow:hidden}
+.card img{width:100%;height:100%;object-fit:cover;transform:scale(1.04);transition:transform 1.2s var(--ease),filter .6s;filter:saturate(.95)}
+.card:hover img{transform:scale(1.12);filter:saturate(1.1)}
+.card .sk{position:absolute;inset:0;background:linear-gradient(110deg,var(--surface) 30%,#1b3039 50%,var(--surface) 70%);background-size:200% 100%;animation:sh 1.4s infinite}
+@keyframes sh{to{background-position:-200% 0}}
+.card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.25),transparent 30%,transparent 50%,rgba(6,12,14,.92));pointer-events:none}
+.card .top{position:absolute;top:14px;left:14px;right:14px;display:flex;justify-content:space-between;z-index:2}
+.pill{background:rgba(10,18,21,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:5px 11px;font-size:12px;font-weight:700;letter-spacing:.02em}
+.pill.yr{color:var(--sun)}
+.card .bot{position:absolute;left:18px;right:18px;bottom:18px;z-index:2;transform:translateZ(30px)}
+.card .area{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--lagoon);font-weight:700}
+.card h3{font-family:var(--f-display);font-weight:600;font-size:clamp(18px,2vw,21px);line-height:1.15;margin:6px 0 10px;overflow-wrap:anywhere}
+.card .meta{display:flex;gap:14px;font-size:13.5px;color:#D3DEDE}
+.card .go{position:absolute;right:16px;bottom:16px;z-index:3;width:42px;height:42px;border-radius:50%;background:var(--lagoon);color:#03201E;display:grid;place-items:center;font-size:18px;font-weight:800;transform:scale(0) rotate(-90deg);transition:transform .45s var(--ease)}
+.card:hover .go{transform:none}
+.more{display:flex;justify-content:center;padding:34px 0 0}
+.sentinel{height:1px}
+.empty{text-align:center;color:var(--muted);padding:80px 10px}
+#map{height:min(78vh,760px);border-radius:24px;overflow:hidden;border:1px solid var(--line)}
+.leaflet-container{background:#0e1a1f;font-family:var(--f-body)}
+.leaflet-popup-content-wrapper{background:var(--surface);color:var(--ink);border-radius:16px}
+.leaflet-popup-tip{background:var(--surface)}
+.pop{width:220px;cursor:pointer}
+.pop img{width:100%;height:130px;object-fit:cover;border-radius:10px;margin-bottom:8px}
+.pop b{display:block;font-size:14px}
+.pop span{font-size:12.5px;color:var(--muted)}
+.mk{width:16px;height:16px;border-radius:50%;background:var(--lagoon);border:2.5px solid #0A1215;box-shadow:0 0 0 4px rgba(44,196,184,.25);transition:transform .2s}
+.mk:hover{transform:scale(1.4)}
+.mk.ap{background:transparent;border:2px dashed var(--lagoon);box-shadow:none}
+
+/* ---------- lightbox ---------- */
+.lb{position:fixed;inset:0;z-index:50;background:rgba(5,10,12,.94);backdrop-filter:blur(10px);display:flex;flex-direction:column;opacity:0;transition:opacity .35s}
+.lb.open{opacity:1}
+.lb-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:max(14px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}
+.lb-top .t{min-width:0}
+.lb-top .t small{display:block;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--lagoon);font-weight:700}
+.lb-top .t b{display:block;font-family:var(--f-display);font-weight:600;font-size:clamp(17px,3vw,24px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.x{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);font-size:22px;flex:none}
+.lb-body{flex:1;min-height:0;display:grid;grid-template-columns:1fr;gap:16px;padding:0 max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+@media (min-width:960px){.lb-body{grid-template-columns:1fr 340px}}
+.stage{position:relative;min-height:0;border-radius:20px;overflow:hidden;background:#000}
+.track{display:flex;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.track::-webkit-scrollbar{display:none}
+.track img{flex:0 0 100%;width:100%;height:100%;object-fit:contain;scroll-snap-align:center}
+.nav-b{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;border-radius:50%;background:rgba(10,18,21,.6);backdrop-filter:blur(8px);border:1px solid var(--line);font-size:22px;z-index:2}
+.nav-b.l{left:12px}.nav-b.r{right:12px}
+.ctr{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);background:rgba(0,0,0,.55);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.side{display:none;flex-direction:column;gap:14px;overflow-y:auto}
+@media (min-width:960px){.side{display:flex}}
+.side .box{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px}
+.side .box h4{margin:0 0 10px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.facts div{background:rgba(238,244,242,.05);border-radius:12px;padding:10px 12px}
+.facts span{display:block;font-size:12px;color:var(--muted)}
+.facts b{font-size:15px}
+#mini{height:220px;border-radius:14px;overflow:hidden}
+.thumbs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.thumbs img{width:64px;height:48px;object-fit:cover;border-radius:8px;opacity:.5;cursor:pointer;flex:none;transition:opacity .2s}
+.thumbs img.on{opacity:1;outline:2px solid var(--lagoon)}
+.mobile-facts{display:flex;gap:8px;flex-wrap:wrap}
+@media (min-width:960px){.mobile-facts{display:none}}
+.top-btn{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:30;width:50px;height:50px;border-radius:50%;background:var(--lagoon);color:#03201E;font-size:20px;font-weight:800;box-shadow:0 12px 30px rgba(0,0,0,.4);transform:translateY(120px);transition:transform .4s var(--ease)}
+.top-btn.show{transform:none}
+footer{border-top:1px solid var(--line);padding:40px 0 calc(40px + env(safe-area-inset-bottom,0px));color:var(--muted);font-size:13.5px}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.reveal{opacity:0;transform:translateY(30px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+.sec-h{display:flex;justify-content:space-between;align-items:end;gap:16px;margin:56px 0 24px}
+.sec-h h2{font-family:var(--f-display);font-weight:600;font-size:clamp(26px,5vw,48px);line-height:1;letter-spacing:-.02em;margin:0}
+.sec-h p{margin:0;color:var(--muted);max-width:360px}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  h1 .ln span{transform:none}.lead,.stats{opacity:1}.card,.reveal{opacity:1;transform:none}.slides img{transform:none}
+}
+</style>
+</head>
+<body>
+<header class="hero" id="hero">
+  <div class="slides" id="slides"></div>
+  <div class="glow" id="glow"></div>
+  <nav class="nav"><div class="wrap"><div class="logo">BALI<b>·</b>VITA</div><a href="#catalog">Каталог</a></div></nav>
+  <div class="hero-in"><div class="wrap">
+    <div class="kicker">Долгосрочная аренда</div>
+    <h1><span class="ln"><span>Виллы</span></span><span class="ln"><span>на Бали</span></span></h1>
+    <p class="lead">Отобранные виллы в лучших районах острова — от сёрф-спотов Чангу до джунглей Убуда. Листайте, выбирайте, смотрите на карте.</p>
+    <div class="stats"><div class="stat"><b data-count="0" id="s1">—</b><span>вилл в каталоге</span></div><div class="stat"><b id="s2">—</b><span>районов</span></div><div class="stat"><b id="s3">—</b><span>с фотографиями</span></div></div>
+  </div></div>
+  <div class="cue">листайте</div>
+</header>
+
+<div class="marq" aria-hidden="true"><div class="marq-in" id="marq"></div></div>
+
+<div class="bar" id="bar"><div class="wrap">
+  <div class="row" id="areas" role="group" aria-label="Район"></div>
+  <div class="row2">
+    <div class="row" id="brs" role="group" aria-label="Спальни"></div>
+    <div class="seg" role="group" aria-label="Вид"><button data-v="grid" aria-pressed="true">Плитка</button><button data-v="map" aria-pressed="false">Карта</button></div>
+  </div>
+  <div class="count" id="count">Загружаю каталог…</div>
+</div></div>
+
+<main id="catalog"><div class="wrap">
+  <div class="sec-h reveal"><h2 id="secTitle">Все виллы</h2><p>Нажмите на виллу, чтобы посмотреть все фото и расположение.</p></div>
+  <div class="grid" id="grid"></div>
+  <div class="sentinel" id="sentinel"></div>
+  <div id="mapwrap" hidden><div id="map"></div></div>
+  <div class="empty" id="empty" hidden>По этим фильтрам вилл нет — попробуйте другой район или количество спален.</div>
+</div></main>
+
+<footer><div class="wrap"><div class="logo">BALI<b>·</b>VITA</div><div id="upd">Каталог обновляется автоматически</div></div></footer>
+<button class="top-btn" id="topBtn" aria-label="Наверх">↑</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const API="https://script.google.com/macros/s/AKfycbwCoOvCF13m4e02f9gu0vNkFDvCU2NS-KX3kXNbFHtW0g7zoKR8OOQg4ziWhJAzApWU/exec";
+const AREA_C={"Berawa":[-8.6575,115.1395],"Canggu":[-8.6482,115.1340],"Chemagi":[-8.6265,115.0880],"Jimbaran":[-8.7905,115.1610],"Nusa Dua":[-8.8010,115.2290],"Pererenan":[-8.6395,115.1235],"Sanur":[-8.6930,115.2610],"Seminyak":[-8.6905,115.1685],"Seseh":[-8.6335,115.1050],"Tumbak Bayuh":[-8.6225,115.1405],"Ubud":[-8.5069,115.2625],"Uluwatu":[-8.8290,115.0870],"Umalas":[-8.6610,115.1590],"Ungasan":[-8.8250,115.1660]};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const pic=(id,w)=>`https://lh3.googleusercontent.com/d/${id}=w${w}`;
+const pic2=(id,w)=>`https://drive.google.com/thumbnail?id=${id}&sz=w${w}`;
+const imgErr="if(this.dataset.alt){this.src=this.dataset.alt;this.dataset.alt=''}";
+const brN=br=>{const n=parseInt(br,10)||0;return /\+/.test(br)?Math.max(n,5):n};
+const brTxt=br=>{const n=brN(br);if(!n)return br||"";return n>=5?"5+ спален":n+" "+(n===1?"спальня":n<5?"спальни":"спален")};
+const areaRu=a=>a==="Other"?"Другие районы":a;
+const title=v=>/^villa\s*$/i.test(v.name.trim())?`Вилла в ${areaRu(v.area)}`:v.name;
+const word=(n,f)=>{const a=n%10,b=n%100;return (a===1&&b!==11)?f[0]:(a>=2&&a<=4&&(b<10||b>=20))?f[1]:f[2]};
+const jit=(lot,k)=>{let h=7;for(const c of lot+k)h=(h*131+c.charCodeAt(0))%100003;return (h/100003-.5)*.014};
+
+let ALL=[],LIST=[],shown=0,map=null,mlayer=null;
+const st={area:"all",br:"all",view:"grid"};
+
+/* ---------- hero ---------- */
+function heroSlides(items){
+  const pick=[...items].sort(()=>Math.random()-.5).slice(0,6);
+  $("#slides").innerHTML=pick.map((v,i)=>`<img alt="" src="${pic(v.photo,1920)}" data-alt="${pic2(v.photo,1920)}" onerror="${imgErr}" ${i?'loading="lazy"':""}>`).join("");
+  const imgs=[...$("#slides").children];let k=0;if(!imgs.length)return;imgs[0].classList.add("on");
+  if(!reduce&&imgs.length>1)setInterval(()=>{imgs[k].classList.remove("on");k=(k+1)%imgs.length;imgs[k].classList.add("on")},5200);
+}
+if(!reduce)$("#hero").addEventListener("pointermove",e=>{const r=e.currentTarget.getBoundingClientRect();$("#glow").style.left=(e.clientX-r.left)+"px";$("#glow").style.top=(e.clientY-r.top)+"px"});
+function countUp(el,to){if(reduce){el.textContent=to;return}const t0=performance.now(),d=1400;const f=t=>{const p=Math.min(1,(t-t0)/d);el.textContent=Math.round(to*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f)};requestAnimationFrame(f)}
+
+/* ---------- filters ---------- */
+function buildFilters(){
+  const c={};ALL.forEach(v=>c[v.area]=(c[v.area]||0)+1);
+  const areas=Object.keys(c).sort((a,b)=>a==="Other"?1:b==="Other"?-1:c[b]-c[a]);
+  $("#areas").innerHTML=`<button class="chip" data-a="all" aria-pressed="true">Все районы<small>${ALL.length}</small></button>`+areas.map(a=>`<button class="chip" data-a="${esc(a)}" aria-pressed="false">${esc(areaRu(a))}<small>${c[a]}</small></button>`).join("");
+  $("#brs").innerHTML=[["all","Любые"],["1","1"],["2","2"],["3","3"],["4","4"],["5","5+"]].map(([k,t],i)=>`<button class="chip" data-b="${k}" aria-pressed="${!i}">${k==="all"?t:t+" сп."}</button>`).join("");
+  $("#marq").innerHTML=[0,1].map(()=>areas.filter(a=>a!=="Other").map(a=>`<span>${esc(a)}</span>`).join("")).join("");
+  $("#areas").onclick=e=>{const b=e.target.closest("[data-a]");if(!b)return;st.area=b.dataset.a;$("#areas").querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===b));apply(true)};
+  $("#brs").onclick=e=>{const b=e.target.closest("[data-b]");if(!b)return;st.br=b.dataset.b;$("#brs").querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===b));apply(true)};
+  document.querySelector(".seg").onclick=e=>{const b=e.target.closest("button");if(!b)return;st.view=b.dataset.v;document.querySelectorAll(".seg button").forEach(x=>x.setAttribute("aria-pressed",x===b));apply(false)};
+  return areas.filter(a=>a!=="Other").length;
+}
+function apply(scroll){
+  LIST=ALL.filter(v=>(st.area==="all"||v.area===st.area)&&(st.br==="all"||(st.br==="5"?brN(v.br)>=5:brN(v.br)===+st.br)));
+  const n=LIST.length;
+  $("#count").innerHTML=`Найдено <b>${n}</b> ${word(n,["вилла","виллы","вилл"])}${st.area!=="all"?" · "+esc(areaRu(st.area)):""}`;
+  $("#secTitle").textContent=st.area==="all"?"Все виллы":areaRu(st.area);
+  $("#empty").hidden=!!n;
+  const isMap=st.view==="map";$("#grid").hidden=isMap;$("#mapwrap").hidden=isMap?!n:true;
+  if(isMap)drawMap();else{$("#grid").innerHTML="";shown=0;more()}
+  if(scroll){const y=$("#catalog").getBoundingClientRect().top+scrollY-$("#bar").offsetHeight+8;if(scrollY>y)scrollTo({top:y,behavior:reduce?"auto":"smooth"})}
+}
+
+/* ---------- grid ---------- */
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{rootMargin:"0px 0px -6% 0px"});
+function card(v,i){
+  const el=document.createElement("article");el.className="card";el.tabIndex=0;el.setAttribute("role","button");el.setAttribute("aria-label",title(v)+", "+areaRu(v.area));
+  el.style.transitionDelay=(i%6)*70+"ms";
+  el.innerHTML=`<div class="im"><div class="sk"></div><img loading="lazy" alt="" src="${pic(v.photo,900)}" data-alt="${pic2(v.photo,900)}" onload="this.previousElementSibling&&this.previousElementSibling.remove()" onerror="${imgErr}"></div>
+    <div class="top"><span class="pill">${esc(v.lot)}</span>${v.yearly?'<span class="pill yr">на год</span>':""}</div>
+    <div class="bot"><div class="area">${esc(areaRu(v.area))}</div><h3>${esc(title(v))}</h3><div class="meta"><span>🛏 ${esc(brTxt(v.br))}</span>${v.lat?"<span>📍 на карте</span>":""}</div></div>
+    <span class="go" aria-hidden="true">↗</span>`;
+  el.onclick=()=>openLB(v);el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openLB(v)}};
+  if(!reduce&&matchMedia("(hover:hover)").matches){
+    el.addEventListener("pointermove",e=>{const r=el.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;el.style.transform=`perspective(900px) rotateY(${x*7}deg) rotateX(${-y*7}deg)`});
+    el.addEventListener("pointerleave",()=>{el.style.transform=""});
+  }
+  return el;
+}
+function more(){
+  const part=LIST.slice(shown,shown+24);shown+=part.length;
+  const f=document.createDocumentFragment();part.forEach((v,i)=>{const c=card(v,i);f.appendChild(c);io.observe(c)});$("#grid").appendChild(f);
+}
+new IntersectionObserver(es=>{if(es[0].isIntersecting&&st.view==="grid"&&shown<LIST.length)more()},{rootMargin:"900px"}).observe($("#sentinel"));
+
+/* ---------- map ---------- */
+function pos(v){if(v.lat&&v.lng)return[v.lat,v.lng,true];const c=AREA_C[v.area];return c?[c[0]+jit(v.lot,"a"),c[1]+jit(v.lot,"b"),false]:null}
+function tiles(m){L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{maxZoom:19,subdomains:"abcd",attribution:"© OpenStreetMap © CARTO"}).addTo(m)}
+function drawMap(){
+  if(!window.L){$("#mapwrap").innerHTML='<div class="empty">Карта не загрузилась</div>';return}
+  if(!map){map=L.map("map",{scrollWheelZoom:false}).setView([-8.65,115.17],11);tiles(map);mlayer=L.layerGroup().addTo(map)}
+  mlayer.clearLayers();const pts=[];
+  LIST.forEach(v=>{const p=pos(v);if(!p)return;pts.push([p[0],p[1]]);
+    const m=L.marker([p[0],p[1]],{icon:L.divIcon({className:"",html:`<div class="mk${p[2]?"":" ap"}"></div>`,iconSize:[16,16],iconAnchor:[8,8]})})
+      .bindPopup(`<div class="pop" data-lot="${esc(v.lot)}"><img src="${pic(v.photo,500)}" data-alt="${pic2(v.photo,500)}" onerror="${imgErr}" alt=""><b>${esc(title(v))}</b><span>${esc(areaRu(v.area))} · ${esc(brTxt(v.br))}${p[2]?"":" · примерно"}</span></div>`,{minWidth:220});
+    m.addTo(mlayer)});
+  map.off("popupopen");map.on("popupopen",e=>{const el=e.popup.getElement().querySelector(".pop");if(el)el.onclick=()=>openLB(ALL.find(v=>v.lot===el.dataset.lot))});
+  setTimeout(()=>{map.invalidateSize();if(pts.length)map.fitBounds(pts,{padding:[40,40],maxZoom:14})},60);
+}
+
+/* ---------- lightbox ---------- */
+let lb=null,mini=null;
+async function openLB(v){
+  closeLB(true);
+  lb=document.createElement("div");lb.className="lb";lb.setAttribute("role","dialog");lb.setAttribute("aria-modal","true");lb.setAttribute("aria-label",title(v));
+  lb.innerHTML=`<div class="lb-top"><div class="t"><small>${esc(areaRu(v.area))} · ${esc(v.lot)}</small><b>${esc(title(v))}</b></div><button class="x" aria-label="Закрыть">×</button></div>
+    <div class="lb-body"><div class="stage"><div class="track" id="track"><img alt="" src="${pic(v.photo,1800)}" data-alt="${pic2(v.photo,1800)}" onerror="${imgErr}"></div>
+      <button class="nav-b l" aria-label="Предыдущее фото">‹</button><button class="nav-b r" aria-label="Следующее фото">›</button><span class="ctr" id="ctr">1 / 1</span></div>
+      <aside class="side"><div class="box"><h4>О вилле</h4><div class="facts"><div><span>Район</span><b>${esc(areaRu(v.area))}</b></div><div><span>Спальни</span><b>${esc(brTxt(v.br))}</b></div><div><span>Аренда</span><b>${v.yearly?"от года":"помесячно"}</b></div><div><span>Номер</span><b>${esc(v.lot)}</b></div></div></div>
+        <div class="box"><h4>Фото</h4><div class="thumbs" id="thumbs"></div></div>
+        <div class="box"><h4>Расположение</h4><div id="mini"></div></div></aside></div>`;
+  document.body.appendChild(lb);document.body.style.overflow="hidden";requestAnimationFrame(()=>lb.classList.add("open"));
+  const tr=lb.querySelector("#track"),ctr=lb.querySelector("#ctr");
+  const upd=()=>{const k=Math.round(tr.scrollLeft/tr.clientWidth),n=tr.children.length;ctr.textContent=`${k+1} / ${n}`;lb.querySelectorAll("#thumbs img").forEach((t,i)=>t.classList.toggle("on",i===k))};
+  tr.addEventListener("scroll",upd,{passive:true});
+  const go=d=>tr.scrollBy({left:tr.clientWidth*d,behavior:reduce?"auto":"smooth"});
+  lb.querySelector(".nav-b.l").onclick=()=>go(-1);lb.querySelector(".nav-b.r").onclick=()=>go(1);
+  lb.querySelector(".x").onclick=()=>closeLB();lb.querySelector(".x").focus();
+  lb._key=e=>{if(e.key==="Escape")closeLB();if(e.key==="ArrowRight")go(1);if(e.key==="ArrowLeft")go(-1)};document.addEventListener("keydown",lb._key);
+  const p=pos(v);
+  if(p&&window.L&&getComputedStyle(lb.querySelector(".side")).display!=="none"){mini=L.map(lb.querySelector("#mini"),{zoomControl:false,attributionControl:false,scrollWheelZoom:false}).setView([p[0],p[1]],p[2]?14:12);tiles(mini);
+    L.marker([p[0],p[1]],{icon:L.divIcon({className:"",html:`<div class="mk${p[2]?"":" ap"}"></div>`,iconSize:[16,16],iconAnchor:[8,8]})}).addTo(mini)}
+  try{
+    const r=await fetch(API+"?api=photos&lot="+encodeURIComponent(v.lot));const j=await r.json();
+    if(j.ok&&j.photos&&j.photos.length&&lb&&tr.isConnected){
+      tr.innerHTML=j.photos.map((id,i)=>`<img alt="${esc(title(v))} — фото ${i+1}" ${i>1?'loading="lazy"':""} src="${pic(id,1800)}" data-alt="${pic2(id,1800)}" onerror="${imgErr}">`).join("");
+      const th=lb.querySelector("#thumbs");th.innerHTML=j.photos.map((id,i)=>`<img alt="" src="${pic(id,160)}" data-alt="${pic2(id,160)}" onerror="${imgErr}" data-i="${i}">`).join("");
+      th.onclick=e=>{const t=e.target.closest("[data-i]");if(t)tr.scrollTo({left:tr.clientWidth*+t.dataset.i,behavior:reduce?"auto":"smooth"})};
+      upd();
+    }
+  }catch(e){}
+}
+function closeLB(instant){
+  if(!lb)return;const el=lb;lb=null;document.removeEventListener("keydown",el._key);document.body.style.overflow="";
+  if(mini){mini.remove();mini=null}
+  if(instant)el.remove();else{el.classList.remove("open");setTimeout(()=>el.remove(),300)}
+}
+
+/* ---------- misc ---------- */
+const bar=$("#bar");
+addEventListener("scroll",()=>{bar.classList.toggle("stuck",bar.getBoundingClientRect().top<=0);$("#topBtn").classList.toggle("show",scrollY>innerHeight*1.2)},{passive:true});
+$("#topBtn").onclick=()=>scrollTo({top:0,behavior:reduce?"auto":"smooth"});
+document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
+
+(async function(){
+  try{
+    const r=await fetch(API+"?api=catalog");const d=await r.json();
+    if(!d.ok)throw 0;
+    ALL=d.items.sort((a,b)=>(b.lat?1:0)-(a.lat?1:0)||String(a.lot).localeCompare(String(b.lot)));
+    heroSlides(ALL);
+    const nAreas=buildFilters();
+    countUp($("#s1"),ALL.length);countUp($("#s2"),nAreas);countUp($("#s3"),ALL.length);
+    apply(false);
+  }catch(e){$("#count").textContent="Не удалось загрузить каталог. Обновите страницу чуть позже."}
+})();
+</script>
+</body>
+</html>
