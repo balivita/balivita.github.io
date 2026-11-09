@@ -217,6 +217,10 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 <div class="toast" id="toast" hidden></div>
 
 <script>
+const APP_V="43";
+/* автообновление: если на сайте вышла новая версия, перезагружаемся на неё (Telegram любит держать старую) */
+(async()=>{try{const t=await (await fetch(location.pathname+"?cb="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const APP_V="(\d+)"/);
+  if(m&&m[1]!==APP_V){const k="bv_upd_"+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,"1");const u=new URL(location.href);u.searchParams.set("v",m[1]);location.replace(u.toString())}}}catch(e){}})();
 const API="https://script.google.com/macros/s/AKfycbwCoOvCF13m4e02f9gu0vNkFDvCU2NS-KX3kXNbFHtW0g7zoKR8OOQg4ziWhJAzApWU/exec";
 const tg=window.Telegram&&Telegram.WebApp; const initData=tg&&tg.initData||"";
 if(tg){tg.ready();tg.expand();document.documentElement.dataset.theme=tg.colorScheme==="dark"?"dark":"light";tg.onEvent("themeChanged",()=>document.documentElement.dataset.theme=tg.colorScheme==="dark"?"dark":"light")}
