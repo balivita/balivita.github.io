@@ -145,6 +145,26 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 .shot .main{position:absolute;left:3px;bottom:3px;background:var(--lagoon);color:var(--lagoon-ink);font-size:10px;font-weight:700;border-radius:6px;padding:2px 5px}
 .addph{display:block;text-align:center;background:var(--chip);border:1.5px dashed var(--line);border-radius:14px;padding:14px;font-weight:700;color:var(--ink);cursor:pointer}
 .req{color:var(--sun)}
+.cmpb{flex:0 0 auto!important;background:var(--surface);box-shadow:0 4px 14px var(--shade)}
+.lkres{display:flex;flex-direction:column;gap:10px}
+.hit{display:flex;gap:12px;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:10px;cursor:pointer;text-align:left;width:100%}
+.hit img,.hit .ph0{width:64px;height:64px;border-radius:12px;object-fit:cover;flex:none;background:var(--chip)}
+.hit b{display:block;font-size:14.5px}
+.hit span{font-size:12.5px;color:var(--muted)}
+.verdict{border-radius:14px;padding:12px 14px;font-weight:700;font-size:14.5px}
+.verdict.yes{background:rgba(14,158,151,.14);color:var(--lagoon)}
+.verdict.no{background:rgba(240,169,59,.16);color:#B9771A}
+:root[data-theme="dark"] .verdict.no{color:var(--sun)}
+.cmpw{overflow-x:auto;margin:0 -14px;padding:0 14px 6px;scrollbar-width:thin}
+.cmp{display:grid;gap:0;min-width:min-content}
+.cmp>div{padding:9px 8px;border-bottom:1px solid var(--line);font-size:13.5px;overflow-wrap:anywhere}
+.cmp .h{color:var(--muted);font-size:12px;font-weight:700;position:sticky;left:0;background:var(--surface);z-index:1}
+.cmp .ci img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;display:block}
+.cmp .ci .ph0{width:100%;aspect-ratio:4/3;border-radius:12px;background:var(--chip)}
+.cmp .best{color:var(--lagoon);font-weight:800}
+.cmp .ttl{font-weight:700}
+.cmp a,.cmp button.lnk{color:var(--lagoon);font-weight:700;text-decoration:none;font-size:13px;padding:0}
+.cmp .rm2{font-size:12px;color:var(--muted);text-decoration:underline;padding:0}
 [hidden]{display:none!important}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style>
@@ -153,7 +173,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 <div class="app">
   <div class="top">
     <div class="brand">Baza Vita<small id="sub">Загружаю базу…</small></div>
-    <div class="topr"><form class="lotsearch" id="lotf"><input id="loti" inputmode="numeric" enterkeyhint="search" placeholder="#LOT" aria-label="Номер LOT"><button>Найти</button></form><button class="plus" id="plus" aria-label="Добавить виллу" title="Добавить виллу">+</button></div>
+    <div class="topr"><form class="lotsearch" id="lotf"><input id="loti" enterkeyhint="search" placeholder="#LOT" aria-label="Номер LOT"><button>Найти</button></form><button class="plus" id="plus" aria-label="Добавить виллу" title="Добавить виллу">+</button></div>
   </div>
 
   <section id="search">
@@ -166,6 +186,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
       </div>
       <button class="go" id="go" disabled>Загружаю…</button>
       <button class="go2" id="gomap" disabled>🗺 Показать на карте</button>
+      <button class="go2" id="golink" disabled>🔗 Есть ли в базе? Проверить по ссылке</button>
       <div class="hint">Крутите колёсики, число вилл обновляется сразу</div>
     </div>
   </section>
@@ -188,6 +209,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 
 <div class="dock"><div class="dock-in">
   <button class="back" id="back" hidden>← Поиск</button>
+  <button class="cmpb" id="cmpb" hidden aria-label="Сравнить виллы из подборки">⚖️ Сравнить</button>
   <button class="basket" id="basket" disabled>Подборка <b id="bcnt">0</b></button>
 </div></div>
 <div class="scrim" id="scrim" hidden></div>
@@ -199,7 +221,7 @@ const API="https://script.google.com/macros/s/AKfycbwCoOvCF13m4e02f9gu0vNkFDvCU2
 const tg=window.Telegram&&Telegram.WebApp; const initData=tg&&tg.initData||"";
 if(tg){tg.ready();tg.expand();document.documentElement.dataset.theme=tg.colorScheme==="dark"?"dark":"light";tg.onEvent("themeChanged",()=>document.documentElement.dataset.theme=tg.colorScheme==="dark"?"dark":"light")}
 else if(matchMedia("(prefers-color-scheme: dark)").matches)document.documentElement.dataset.theme="dark";
-const hap=t=>{try{tg&&tg.HapticFeedback&&(t==="sel"?tg.HapticFeedback.selectionChanged():tg.HapticFeedback.impactOccurred(t))}catch(e){}};
+const hap=t=>{try{const H=tg&&tg.HapticFeedback;if(!H)return;t==="sel"?H.selectionChanged():/^(success|warning|error)$/.test(t)?H.notificationOccurred(t):H.impactOccurred(t)}catch(e){}};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const PRICES=[10,15,20,25,30,40,50,70,100,150,0];
@@ -231,7 +253,7 @@ function wheel(el,items,label,initial,onPick){
   el.addEventListener("scroll",()=>{paint();const r=Math.round(el.scrollTop/H);if(r!==last){last=r;hap("sel")}clearTimeout(t);t=setTimeout(()=>{const n=Math.round(el.scrollTop/H);if(n!==idx){idx=n;onPick(items[n]);updCount()}},90)},{passive:true});
   lis.forEach((li,i)=>li.addEventListener("click",()=>el.scrollTo({top:i*H,behavior:"smooth"})));
 }
-function updCount(){const n=found().length;$("#go").textContent=n?`Показать ${n} ${word(n)}`:"Ничего не найдено";$("#go").disabled=!n;$("#gomap").disabled=!n}
+function updCount(){const n=found().length;$("#go").textContent=n?`Показать ${n} ${word(n)}`:"Ничего не найдено";$("#go").disabled=!n;$("#gomap").disabled=!n;$("#golink").disabled=!V.length}
 
 function card(v){
   const on=st.pick.has(v.lot),h=HUE(v.area);
@@ -262,9 +284,9 @@ if(tg&&tg.BackButton)tg.BackButton.onClick(()=>{if(!$("#sheet").hidden)closeShee
 $("#sort").onclick=()=>{st.sortAsc=!st.sortAsc;$("#sort").textContent=st.sortAsc?"Сначала дешевле":"Сначала дороже";renderList()};
 $("#chips").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;const k=b.dataset.f;st.f[k]=!st.f[k];b.setAttribute("aria-pressed",st.f[k]);st.shown=20;renderList();hap("sel")};
 $("#list").onclick=e=>{const a=e.target.closest("[data-add]");if(a){togglePick(a.dataset.add);renderList();return}const o=e.target.closest("[data-open]");if(o)openDetail(o.dataset.open)};
-$("#lotf").onsubmit=e=>{e.preventDefault();hideKb();const n=parseInt(($("#loti").value||"").replace(/\D/g,""),10);if(!n)return;const lot="#"+String(n).padStart(3,"0");if(V.find(v=>v.lot===lot))openDetail(lot);else toast(`LOT ${lot} не найден`)};
+$("#lotf").onsubmit=e=>{e.preventDefault();hideKb();const raw=($("#loti").value||"").trim();if(/[./]/.test(raw)&&/[a-z]/i.test(raw)){$("#loti").value="";openLinkCheck(raw);return}const n=parseInt(($("#loti").value||"").replace(/\D/g,""),10);if(!n)return;const lot="#"+String(n).padStart(3,"0");if(V.find(v=>v.lot===lot))openDetail(lot);else toast(`LOT ${lot} не найден`)};
 function togglePick(lot){st.pick.has(lot)?st.pick.delete(lot):st.pick.set(lot,V.find(v=>v.lot===lot));updBasket();save();hap("light")}
-function updBasket(){const n=st.pick.size;$("#bcnt").textContent=n;$("#basket").disabled=!n}
+function updBasket(){const n=st.pick.size;$("#bcnt").textContent=n;$("#basket").disabled=!n;$("#cmpb").hidden=n<2}
 
 function openSheet(html){$("#sheetIn").innerHTML='<div class="grab"></div>'+html;$("#sheetIn").querySelectorAll("input:not([type=checkbox]):not([type=file]):not([type=range])").forEach(i=>i.setAttribute("enterkeyhint","done"));$("#scrim").hidden=false;$("#sheet").hidden=false;if(tg&&tg.BackButton)tg.BackButton.show()}
 function closeSheet(){hideKb();$("#scrim").hidden=true;$("#sheet").hidden=true;if(tg&&tg.BackButton&&$("#results").hidden)tg.BackButton.hide()}
@@ -370,6 +392,76 @@ async function saveVilla(){
 }
 $("#plus").onclick=openAdd;
 
+/* ---------- проверка по ссылке ---------- */
+function linkKeys(u){
+  u=String(u||"").trim();if(!u)return[];
+  let x;try{x=new URL(/^https?:\/\//i.test(u)?u:"https://"+u)}catch(e){return["raw:"+u.toLowerCase()]}
+  const h=x.href,keys=[];
+  const m=h.match(/(?:posts|permalink|videos|photos|reel)\/(?:[\w.-]+\/)?(\d{6,})/i)||h.match(/[?&](?:story_fbid|multi_permalinks|fbid|v|id)=(\d{6,})/i)||
+    h.match(/\/(?:share\/(?:p|r|v)|p)\/([\w-]{6,})/i)||h.match(/maps\.app\.goo\.gl\/([\w-]+)/i)||h.match(/goo\.gl\/maps\/([\w-]+)/i)||
+    h.match(/\/rooms\/(\d+)/i)||h.match(/\/hotel\/[\w-]+\/([\w-]+)\.html/i);
+  if(m)keys.push("id:"+m[1].toLowerCase());
+  const c=h.match(/[@=](-?\d{1,2}\.\d{4,}),\s*(-?\d{2,3}\.\d{4,})/);
+  if(c)keys.push("ll:"+(+c[1]).toFixed(4)+","+(+c[2]).toFixed(4));
+  keys.push("u:"+(x.hostname.replace(/^(www|m|web|mbasic|l)\./,"")+x.pathname).replace(/\/+$/,"").toLowerCase());
+  return keys;
+}
+function findByLink(u){
+  const ks=new Set(linkKeys(u).filter(k=>!/^u:(facebook\.com|maps\.google\.com|google\.com\/maps|maps\.app\.goo\.gl)$/.test(k)));
+  if(!ks.size)return[];
+  return V.filter(v=>[v.src,v.maps].some(l=>l&&linkKeys(l).some(k=>ks.has(k))));
+}
+function hitHtml(v){return `<button class="hit" data-hit="${esc(v.lot)}">${v.photo?`<img src="${img(v)}" alt="" onerror="this.outerHTML='<span class=ph0></span>'">`:'<span class="ph0"></span>'}<span><b>${esc(v.lot)} · ${esc(v.name)}</b><span>${esc(v.area)} · ${esc(v.br)} · ${mln(v.price)} млн</span></span></button>`}
+function openLinkCheck(pre){
+  openSheet(`<h3>Есть ли вилла в базе?</h3>
+    <label class="field" for="lk">Ссылка на объявление (Facebook и др.) или Google Maps<input type="url" id="lk" placeholder="https://www.facebook.com/groups/…" value="${esc(pre)}" autocomplete="off"></label>
+    <div class="two"><button class="go2" id="lkPaste" style="margin:0">📋 Вставить</button><button class="send" id="lkGo">Проверить</button></div>
+    <div class="lkres" id="lkRes"></div>`);
+  const run=()=>{hideKb();const u=$("#lk").value.trim();const box=$("#lkRes");
+    if(!u){box.innerHTML="";return}
+    const hits=findByLink(u);
+    if(hits.length){hap("success");box.innerHTML=`<div class="verdict yes">✓ Уже есть в базе${hits.length>1?` — ${hits.length} совпадения`:""}</div>`+hits.map(hitHtml).join("");
+      box.querySelectorAll("[data-hit]").forEach(b=>b.onclick=()=>openDetail(b.dataset.hit))}
+    else{hap("warning");const fbShare=/facebook\.com\/share\//i.test(u);
+      box.innerHTML=`<div class="verdict no">Такой ссылки в базе нет</div>
+        <div class="note">${fbShare?"Это ссылка «Поделиться» — она отличается от адреса поста. Откройте пост и скопируйте ссылку из адресной строки, затем проверьте ещё раз. ":""}Сверка идёт по ссылке на объявление и на Google Maps. Виллу без сохранённой ссылки можно найти по району и цене.</div>
+        <button class="send" id="lkAdd">+ Добавить эту виллу в базу</button>`;
+      $("#lkAdd").onclick=()=>{openAdd();$("#a-src").value=/maps\.|goo\.gl/i.test(u)?"":u;if(/maps\.|goo\.gl/i.test(u))$("#a-maps").value=u}}};
+  $("#lkGo").onclick=run;
+  $("#lk").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();run()}});
+  $("#lkPaste").onclick=async()=>{try{const t=await navigator.clipboard.readText();if(t){$("#lk").value=t.trim();run();return}}catch(e){}$("#lk").focus();toast("Нажмите в поле и выберите «Вставить»")};
+  if(pre)run();
+}
+
+/* ---------- сравнение вилл ---------- */
+function openCompare(){
+  const list=[...st.pick.values()];if(list.length<2){toast("Добавьте в подборку хотя бы 2 виллы");return}
+  const n=list.length,minP=Math.min(...list.map(v=>v.price||Infinity)),minC=Math.min(...list.map(cp));
+  const maxBr=Math.max(...list.map(brN));
+  const col=`88px repeat(${n},minmax(148px,1fr))`;
+  const row=(label,f)=>`<div class="h">${label}</div>`+list.map(f).join("");
+  const html=
+    row("",v=>`<div class="ci">${v.photo?`<img src="${img(v)}" alt="" onerror="this.outerHTML='<div class=ph0></div>'">`:'<div class="ph0"></div>'}</div>`)+
+    row("Вилла",v=>`<div><div class="ttl">${esc(v.name)}</div><div class="note">${esc(v.lot)}</div></div>`)+
+    row("Район",v=>`<div>${esc(v.area)}</div>`)+
+    row("Спальни",v=>`<div class="${brN(v)===maxBr&&n>1?"best":""}">${esc(v.br)}</div>`)+
+    row("Цена владельца",v=>`<div class="${v.price===minP?"best":""}">${mln(v.price)} млн</div>`)+
+    row("Цена клиенту",v=>`<div class="${cp(v)===minC?"best":""}">${mln(cp(v))} млн</div>`)+
+    row("Срок",v=>`<div>${v.yearly?"только год":"помесячно"}</div>`)+
+    row("Кто сдаёт",v=>`<div>${v.own?"частное":v.agency?"агентство":"—"}</div>`)+
+    row("Карта",v=>`<div>${v.lat?"📍 точный адрес":v.maps?"📍 ссылка":"—"}</div>`)+
+    row("Заметки",v=>`<div class="note">${esc(v.notes||"—")}</div>`)+
+    row("",v=>`<div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start"><button class="lnk" data-op="${esc(v.lot)}">Подробнее →</button>${v.folder?`<button class="lnk" data-u="${esc(v.folder)}">📷 Все фото</button>`:""}${v.maps?`<button class="lnk" data-u="${esc(v.maps)}">🗺 Карта</button>`:""}<button class="rm2" data-rm2="${esc(v.lot)}">убрать</button></div>`);
+  openSheet(`<h3>Сравнение · ${n} ${word(n)}</h3>
+    <div class="note">Лучшее значение в строке выделено цветом. Листайте таблицу вбок.</div>
+    <div class="cmpw"><div class="cmp" style="grid-template-columns:${col}">${html}</div></div>
+    <button class="send" id="cmpOffer">Перейти к предложению</button>`);
+  $("#sheetIn").querySelectorAll("[data-op]").forEach(b=>b.onclick=()=>openDetail(b.dataset.op));
+  $("#sheetIn").querySelectorAll("[data-u]").forEach(b=>b.onclick=()=>open(b.dataset.u));
+  $("#sheetIn").querySelectorAll("[data-rm2]").forEach(b=>b.onclick=()=>{delete st.custom[b.dataset.rm2];togglePick(b.dataset.rm2);if(!$("#results").hidden)renderList(false);st.pick.size>=2?openCompare():closeSheet()});
+  $("#cmpOffer").onclick=openOffer;
+}
+
 const autoP=v=>Math.round(v.price*(1+st.markup/100)/5e5)*5e5;
 const cp=v=>st.custom[v.lot]>0?st.custom[v.lot]:autoP(v);
 const idr=n=>n.toLocaleString("ru-RU").replace(/ /g," ");
@@ -416,6 +508,8 @@ async function sendOffer(){
   }catch(e){toast("Нет связи с базой. Попробуйте ещё раз");b.disabled=false;b.textContent="Попробовать ещё раз"}
 }
 $("#basket").onclick=openOffer;
+$("#cmpb").onclick=openCompare;
+$("#golink").onclick=()=>openLinkCheck("");
 let tt;function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(tt);tt=setTimeout(()=>el.hidden=true,2800)}
 
 async function load(){
