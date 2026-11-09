@@ -65,6 +65,25 @@ h1{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,6.5vw,40px)
 .lang{position:fixed;top:max(12px,env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px));z-index:1000;display:flex;background:var(--surface);border-radius:999px;padding:3px;box-shadow:0 6px 20px var(--shade)}
 .lang button{border:0;background:none;font:700 12.5px/1 var(--f-body);color:var(--muted);padding:8px 11px;border-radius:999px;cursor:pointer}
 .lang button[aria-pressed="true"]{background:var(--lagoon);color:var(--lagoon-ink)}
+.cmpbar{position:sticky;bottom:calc(14px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;z-index:500;pointer-events:none}
+.cmpbar button{pointer-events:auto;border:0;background:var(--ink);color:var(--bg);font:700 15px/1 var(--f-body);padding:15px 22px;border-radius:18px;box-shadow:0 12px 30px rgba(0,0,0,.25);cursor:pointer}
+.ov{position:fixed;inset:0;z-index:2000;background:rgba(8,14,17,.55);display:flex;align-items:flex-end;justify-content:center}
+@media (min-width:760px){.ov{align-items:center}}
+.ovin{background:var(--surface);width:100%;max-width:900px;max-height:92vh;overflow:auto;border-radius:24px 24px 0 0;padding:18px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+@media (min-width:760px){.ovin{border-radius:24px}}
+.ovh{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:6px}
+.ovh h3{font-family:var(--f-display);font-weight:500;font-size:20px;margin:0}
+.ovh button{border:0;background:var(--chip);color:var(--ink);width:40px;height:40px;border-radius:50%;font-size:20px;cursor:pointer}
+.ovnote{color:var(--muted);font-size:13px;margin:0 0 12px}
+.cmpw{overflow-x:auto;margin:0 -16px;padding:0 16px 6px}
+.cmp{display:grid;min-width:min-content}
+.cmp>div{padding:10px 8px;border-bottom:1px solid var(--line);font-size:14px;overflow-wrap:anywhere}
+.cmp .h{color:var(--muted);font-size:12px;font-weight:700;position:sticky;left:0;background:var(--surface);z-index:1}
+.cmp img,.cmp .ph0{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;display:block;background:var(--chip)}
+.cmp .num2{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--lagoon);color:var(--lagoon-ink);font-weight:700;font-size:12px;margin-right:6px}
+.cmp .best{color:var(--lagoon);font-weight:800}
+.cmp .ttl{font-weight:700}
+.cmp button.lnk{border:0;background:none;color:var(--lagoon);font:700 13px var(--f-body);padding:0;cursor:pointer}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -90,6 +109,8 @@ const TX={
     perMonth:"IDR / месяц",perMonthShort:"IDR/мес",yearly:"при аренде на год",onMap:"📍 На карте",gmaps:"Открыть в Google Maps",
     approx:"расположение примерное",toPhotos:"К фото ↓",photo:"фото",prev:"Предыдущее фото",next:"Следующее фото",
     villaIn:a=>`Вилла в ${a}`,title:"Виллы на Бали — подборка",
+    cmpBtn:"⚖️ Сравнить варианты",cmpTitle:"Сравнение вариантов",cmpNote:"Лучшее значение выделено цветом. Таблицу можно листать вбок.",
+    rVilla:"Вилла",rArea:"Район",rBeds:"Спальни",rPrice:"Цена в месяц",rLease:"Аренда",rMap:"Карта",monthly:"помесячно",yearOnly:"от года",exact:"точный адрес",approxS:"примерно",toCard:"К вилле ↓",close:"Закрыть",
     br:(n,plus)=>plus?n+"+ спален":n+" "+ruW(n,["спальня","спальни","спален"])},
   en:{loading:"Loading your selection…",notFound:"Selection not found. Please ask your manager to send the link again.",
     kicker:"Bali villas · monthly rentals",
@@ -99,6 +120,8 @@ const TX={
     perMonth:"IDR / month",perMonthShort:"IDR/mo",yearly:"with a 1-year lease",onMap:"📍 On the map",gmaps:"Open in Google Maps",
     approx:"approximate location",toPhotos:"To photos ↓",photo:"photo",prev:"Previous photo",next:"Next photo",
     villaIn:a=>`Villa in ${a}`,title:"Bali villas — your selection",
+    cmpBtn:"⚖️ Compare options",cmpTitle:"Compare options",cmpNote:"The best value in each row is highlighted. Swipe the table sideways.",
+    rVilla:"Villa",rArea:"Area",rBeds:"Bedrooms",rPrice:"Price per month",rLease:"Lease",rMap:"Map",monthly:"monthly",yearOnly:"1 year+",exact:"exact location",approxS:"approximate",toCard:"See villa ↓",close:"Close",
     br:(n,plus)=>(plus?n+"+":n)+" "+(n===1&&!plus?"bedroom":"bedrooms")}
 };
 function ruW(n,f){const a=n%10,b=n%100;return (a===1&&b!==11)?f[0]:(a>=2&&a<=4&&(b<10||b>=20))?f[1]:f[2]}
@@ -133,7 +156,9 @@ function render(){
       <p class="lead">${T("lead")}</p></header>
     <div id="map" role="region" aria-label="${T("mapAria")}"></div>
     <div class="list">${it.map(card).join("")}</div>
-    <div class="foot">${T("foot")}</div>`;
+    <div class="foot">${T("foot")}</div>
+    ${n>1?`<div class="cmpbar"><button id="cmpBtn">${T("cmpBtn")}</button></div>`:""}`;
+  const cb=document.getElementById("cmpBtn");if(cb)cb.onclick=openCompare;
   it.forEach((v,i)=>gallery(i,v));
   drawMap(it);
 }
@@ -141,6 +166,28 @@ document.querySelector(".lang").addEventListener("click",e=>{const b=e.target.cl
   LANG=b.dataset.l;try{localStorage.setItem("bv_lang",LANG)}catch(err){}
   const u=new URL(location.href);u.searchParams.set("lang",LANG);history.replaceState(null,"",u);
   paintLang();if(DATA)render()});
+function openCompare(){
+  const it=DATA.items,n=it.length;
+  const minP=Math.min(...it.map(v=>v.price||Infinity));
+  const brNum=v=>{const k=parseInt(v.br,10)||0;return /\+/.test(v.br)?Math.max(k,5):k};const maxB=Math.max(...it.map(brNum));
+  const row=(label,f)=>`<div class="h">${label}</div>`+it.map(f).join("");
+  const html=row("",(v)=>{const id=v.photos&&v.photos[0];return `<div>${id?`<img src="${pic(id,600)}" data-alt="${pic2(id,600)}" alt="" onerror="if(this.dataset.alt){this.src=this.dataset.alt;this.dataset.alt=''}">`:'<div class="ph0"></div>'}</div>`})+
+    row(T("rVilla"),(v,i)=>`<div class="ttl"><span class="num2">${i+1}</span>${esc(vName(v))}</div>`)+
+    row(T("rArea"),v=>`<div>${esc(v.area)}</div>`)+
+    row(T("rBeds"),v=>`<div class="${brNum(v)===maxB?"best":""}">${esc(brTxt(v.br))}</div>`)+
+    row(T("rPrice"),v=>`<div class="${v.price===minP?"best":""}">${idr(v.price)} IDR</div>`)+
+    row(T("rLease"),v=>`<div>${v.yearly?T("yearOnly"):T("monthly")}</div>`)+
+    row(T("rMap"),v=>`<div>${v.lat?T("exact"):T("approxS")}</div>`)+
+    row("",(v,i)=>`<div><button class="lnk" data-go="${i}">${T("toCard")}</button></div>`);
+  const ov=document.createElement("div");ov.className="ov";ov.setAttribute("role","dialog");ov.setAttribute("aria-modal","true");ov.setAttribute("aria-label",T("cmpTitle"));
+  ov.innerHTML=`<div class="ovin"><div class="ovh"><h3>${T("cmpTitle")}</h3><button aria-label="${T("close")}">×</button></div><p class="ovnote">${T("cmpNote")}</p>
+    <div class="cmpw"><div class="cmp" style="grid-template-columns:96px repeat(${n},minmax(150px,1fr))">${html}</div></div></div>`;
+  document.body.appendChild(ov);document.body.style.overflow="hidden";
+  const close=()=>{ov.remove();document.body.style.overflow="";document.removeEventListener("keydown",key)};
+  const key=e=>{if(e.key==="Escape")close()};document.addEventListener("keydown",key);
+  ov.addEventListener("click",e=>{if(e.target===ov||e.target.closest(".ovh button"))close();const g=e.target.closest("[data-go]");if(g){close();document.getElementById("v"+g.dataset.go).scrollIntoView({behavior:"smooth",block:"start"})}});
+  ov.querySelector(".ovh button").focus();
+}
 function card(v,i){
   const ph=v.photos&&v.photos.length?v.photos:[];const nm=vName(v);
   return `<article class="card" id="v${i}">

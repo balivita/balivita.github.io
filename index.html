@@ -209,7 +209,6 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 
 <div class="dock"><div class="dock-in">
   <button class="back" id="back" hidden>← Поиск</button>
-  <button class="cmpb" id="cmpb" hidden aria-label="Сравнить виллы из подборки">⚖️ Сравнить</button>
   <button class="basket" id="basket" disabled>Подборка <b id="bcnt">0</b></button>
 </div></div>
 <div class="scrim" id="scrim" hidden></div>
@@ -217,7 +216,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 <div class="toast" id="toast" hidden></div>
 
 <script>
-const APP_V="43";
+const APP_V="44";
 /* автообновление: если на сайте вышла новая версия, перезагружаемся на неё (Telegram любит держать старую) */
 (async()=>{try{const t=await (await fetch(location.pathname+"?cb="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const APP_V="(\d+)"/);
   if(m&&m[1]!==APP_V){const k="bv_upd_"+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,"1");const u=new URL(location.href);u.searchParams.set("v",m[1]);location.replace(u.toString())}}}catch(e){}})();
@@ -290,7 +289,7 @@ $("#chips").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;const k=b
 $("#list").onclick=e=>{const a=e.target.closest("[data-add]");if(a){togglePick(a.dataset.add);renderList();return}const o=e.target.closest("[data-open]");if(o)openDetail(o.dataset.open)};
 $("#lotf").onsubmit=e=>{e.preventDefault();hideKb();const raw=($("#loti").value||"").trim();if(/[./]/.test(raw)&&/[a-z]/i.test(raw)){$("#loti").value="";openLinkCheck(raw);return}const n=parseInt(($("#loti").value||"").replace(/\D/g,""),10);if(!n)return;const lot="#"+String(n).padStart(3,"0");if(V.find(v=>v.lot===lot))openDetail(lot);else toast(`LOT ${lot} не найден`)};
 function togglePick(lot){st.pick.has(lot)?st.pick.delete(lot):st.pick.set(lot,V.find(v=>v.lot===lot));updBasket();save();hap("light")}
-function updBasket(){const n=st.pick.size;$("#bcnt").textContent=n;$("#basket").disabled=!n;$("#cmpb").hidden=n<2}
+function updBasket(){const n=st.pick.size;$("#bcnt").textContent=n;$("#basket").disabled=!n}
 
 function openSheet(html){$("#sheetIn").innerHTML='<div class="grab"></div>'+html;$("#sheetIn").querySelectorAll("input:not([type=checkbox]):not([type=file]):not([type=range])").forEach(i=>i.setAttribute("enterkeyhint","done"));$("#scrim").hidden=false;$("#sheet").hidden=false;if(tg&&tg.BackButton)tg.BackButton.show()}
 function closeSheet(){hideKb();$("#scrim").hidden=true;$("#sheet").hidden=true;if(tg&&tg.BackButton&&$("#results").hidden)tg.BackButton.hide()}
@@ -512,7 +511,6 @@ async function sendOffer(){
   }catch(e){toast("Нет связи с базой. Попробуйте ещё раз");b.disabled=false;b.textContent="Попробовать ещё раз"}
 }
 $("#basket").onclick=openOffer;
-$("#cmpb").onclick=openCompare;
 $("#golink").onclick=()=>openLinkCheck("");
 let tt;function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(tt);tt=setTimeout(()=>el.hidden=true,2800)}
 
