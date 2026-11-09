@@ -111,6 +111,7 @@ main{padding:28px 0 80px}
 .empty{text-align:center;color:var(--muted);padding:80px 10px}
 #map{height:min(78vh,760px);border-radius:24px;overflow:hidden;border:1px solid var(--line)}
 .leaflet-container{background:#0e1a1f;font-family:var(--f-body)}
+.leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.92) contrast(.9) saturate(.55)}
 .leaflet-popup-content-wrapper{background:var(--surface);color:var(--ink);border-radius:16px}
 .leaflet-popup-tip{background:var(--surface)}
 .pop{width:220px;cursor:pointer}
@@ -281,7 +282,7 @@ new IntersectionObserver(es=>{if(es[0].isIntersecting&&st.view==="grid"&&shown<L
 
 /* ---------- map ---------- */
 function pos(v){if(v.lat&&v.lng)return[v.lat,v.lng,true];const c=AREA_C[v.area];return c?[c[0]+jit(v.lot,"a"),c[1]+jit(v.lot,"b"),false]:null}
-function tiles(m){L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{maxZoom:19,subdomains:"abcd",attribution:"© OpenStreetMap © CARTO"}).addTo(m)}
+function tiles(m){L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(m)}
 function drawMap(){
   if(!window.L){$("#mapwrap").innerHTML='<div class="empty">Карта не загрузилась</div>';return}
   if(!map){map=L.map("map",{scrollWheelZoom:false}).setView([-8.65,115.17],11);tiles(map);mlayer=L.layerGroup().addTo(map)}
