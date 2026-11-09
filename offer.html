@@ -62,51 +62,96 @@ h1{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,6.5vw,40px)
 .mk{width:28px;height:28px;border-radius:50%;background:#0E9E97;color:#fff;display:grid;place-items:center;font:700 13px/1 "Onest",sans-serif;border:2px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.3)}
 .mk.ap{background:#fff;color:#0E9E97;border:2px dashed #0E9E97}
 .leaflet-popup-content{font-family:var(--f-body);margin:10px 12px}
+.lang{position:fixed;top:max(12px,env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px));z-index:1000;display:flex;background:var(--surface);border-radius:999px;padding:3px;box-shadow:0 6px 20px var(--shade)}
+.lang button{border:0;background:none;font:700 12.5px/1 var(--f-body);color:var(--muted);padding:8px 11px;border-radius:999px;cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--lagoon);color:var(--lagoon-ink)}
 [hidden]{display:none!important}
 </style>
 </head>
 <body>
-<div class="wrap" id="app"><div class="state" id="state">Загружаю подборку…</div></div>
+<div class="lang" role="group" aria-label="Language"><button data-l="ru" aria-pressed="false">RU</button><button data-l="en" aria-pressed="false">EN</button></div>
+<div class="wrap" id="app"><div class="state" id="state">…</div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 const API="https://script.google.com/macros/s/AKfycbwCoOvCF13m4e02f9gu0vNkFDvCU2NS-KX3kXNbFHtW0g7zoKR8OOQg4ziWhJAzApWU/exec";
 const AREA_C={"Berawa":[-8.6575,115.1395],"Canggu":[-8.6482,115.1340],"Chemagi":[-8.6265,115.0880],"Jimbaran":[-8.7905,115.1610],"Nusa Dua":[-8.8010,115.2290],"Pererenan":[-8.6395,115.1235],"Sanur":[-8.6930,115.2610],"Seminyak":[-8.6905,115.1685],"Seseh":[-8.6335,115.1050],"Tumbak Bayuh":[-8.6225,115.1405],"Ubud":[-8.5069,115.2625],"Uluwatu":[-8.8290,115.0870],"Umalas":[-8.6610,115.1590],"Ungasan":[-8.8250,115.1660]};
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const idr=n=>Number(n||0).toLocaleString("ru-RU").replace(/\s/g," ");
-const word=n=>{const a=n%10,b=n%100;return (a===1&&b!==11)?"вилла":(a>=2&&a<=4&&(b<10||b>=20))?"виллы":"вилл"};
-const brTxt=br=>{const n=parseInt(br,10);if(!n)return br||"";return /\+/.test(br)?n+"+ спален":n+" "+(n===1?"спальня":n<5?"спальни":"спален")};
 const pic=(id,w)=>`https://lh3.googleusercontent.com/d/${id}=w${w}`;
 const pic2=(id,w)=>`https://drive.google.com/thumbnail?id=${id}&sz=w${w}`;
 const jit=(lot,k)=>{let h=7;for(const c of lot+k)h=(h*131+c.charCodeAt(0))%100003;return (h/100003-.5)*.012};
 
+/* ---------- RU / EN ---------- */
+const TX={
+  ru:{loading:"Загружаю подборку…",notFound:"Подборка не найдена. Попросите менеджера прислать ссылку ещё раз.",
+    kicker:"Виллы на Бали · помесячная аренда",
+    hello:(name,n)=>`${name?esc(name)+", подобрали":"Подобрали"} для вас ${n} ${ruW(n,["виллу","виллы","вилл"])}`,
+    lead:"Листайте фото, смотрите расположение на карте и напишите, какой вариант посмотрим первым.",
+    mapAria:"Карта вилл",foot:"Цены указаны в индонезийских рупиях (IDR) за месяц аренды.",
+    perMonth:"IDR / месяц",perMonthShort:"IDR/мес",yearly:"при аренде на год",onMap:"📍 На карте",gmaps:"Открыть в Google Maps",
+    approx:"расположение примерное",toPhotos:"К фото ↓",photo:"фото",prev:"Предыдущее фото",next:"Следующее фото",
+    villaIn:a=>`Вилла в ${a}`,title:"Виллы на Бали — подборка",
+    br:(n,plus)=>plus?n+"+ спален":n+" "+ruW(n,["спальня","спальни","спален"])},
+  en:{loading:"Loading your selection…",notFound:"Selection not found. Please ask your manager to send the link again.",
+    kicker:"Bali villas · monthly rentals",
+    hello:(name,n)=>`${name?esc(name)+", we've":"We've"} selected ${n} ${n===1?"villa":"villas"} for you`,
+    lead:"Swipe through the photos, check the locations on the map and let us know which one you'd like to see first.",
+    mapAria:"Villas map",foot:"Prices are in Indonesian rupiah (IDR) per month.",
+    perMonth:"IDR / month",perMonthShort:"IDR/mo",yearly:"with a 1-year lease",onMap:"📍 On the map",gmaps:"Open in Google Maps",
+    approx:"approximate location",toPhotos:"To photos ↓",photo:"photo",prev:"Previous photo",next:"Next photo",
+    villaIn:a=>`Villa in ${a}`,title:"Bali villas — your selection",
+    br:(n,plus)=>(plus?n+"+":n)+" "+(n===1&&!plus?"bedroom":"bedrooms")}
+};
+function ruW(n,f){const a=n%10,b=n%100;return (a===1&&b!==11)?f[0]:(a>=2&&a<=4&&(b<10||b>=20))?f[1]:f[2]}
+const QS=new URLSearchParams(location.search);
+let LANG=(()=>{const q=(QS.get("lang")||"").toLowerCase();if(q==="en"||q==="ru")return q;
+  try{const s=localStorage.getItem("bv_lang");if(s==="en"||s==="ru")return s}catch(e){}
+  return /^ru|^uk|^be|^kk/i.test(navigator.language||"")?"ru":"en"})();
+const T=k=>TX[LANG][k];
+const idr=n=>Number(n||0).toLocaleString(LANG==="ru"?"ru-RU":"en-US").replace(/\s/g," ");
+const brTxt=br=>{const n=parseInt(br,10);if(!n)return br||"";return TX[LANG].br(n,/\+/.test(br))};
+const vName=v=>/^villa\s*$/i.test(String(v.name||"").trim())?T("villaIn")(v.area):v.name;
+let DATA=null;
+
 async function main(){
-  const t=new URLSearchParams(location.search).get("t")||"";
-  let d;
-  try{const r=await fetch(API+"?api=offer&t="+encodeURIComponent(t));d=await r.json()}catch(e){}
-  if(!d||!d.ok||!d.items||!d.items.length){document.getElementById("state").textContent="Подборка не найдена. Попросите менеджера прислать ссылку ещё раз.";return}
+  paintLang();
+  document.getElementById("state").textContent=T("loading");
+  const t=QS.get("t")||"";
+  try{const r=await fetch(API+"?api=offer&t="+encodeURIComponent(t));DATA=await r.json()}catch(e){}
+  render();
+}
+function paintLang(){
+  document.documentElement.lang=LANG;document.title=T("title");
+  document.querySelectorAll(".lang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===LANG));
+}
+function render(){
+  const d=DATA;
+  if(!d||!d.ok||!d.items||!d.items.length){document.getElementById("app").innerHTML=`<div class="state">${T("notFound")}</div>`;return}
   const it=d.items, n=it.length;
-  const hello=d.client?`${esc(d.client)}, подобрали для вас`:"Подобрали для вас";
-  const app=document.getElementById("app");
-  app.innerHTML=`<header><div class="kicker">Виллы на Бали · помесячная аренда</div>
-      <h1>${hello} ${n} ${word(n)}</h1>
-      <p class="lead">Листайте фото, смотрите расположение на карте и напишите, какой вариант посмотрим первым.</p></header>
-    <div id="map" role="region" aria-label="Карта вилл"></div>
+  if(window._map){window._map.remove();window._map=null}
+  document.getElementById("app").innerHTML=`<header><div class="kicker">${T("kicker")}</div>
+      <h1>${T("hello")(d.client,n)}</h1>
+      <p class="lead">${T("lead")}</p></header>
+    <div id="map" role="region" aria-label="${T("mapAria")}"></div>
     <div class="list">${it.map(card).join("")}</div>
-    <div class="foot">Цены указаны в индонезийских рупиях (IDR) за месяц аренды.</div>`;
+    <div class="foot">${T("foot")}</div>`;
   it.forEach((v,i)=>gallery(i,v));
   drawMap(it);
 }
+document.querySelector(".lang").addEventListener("click",e=>{const b=e.target.closest("[data-l]");if(!b||b.dataset.l===LANG)return;
+  LANG=b.dataset.l;try{localStorage.setItem("bv_lang",LANG)}catch(err){}
+  const u=new URL(location.href);u.searchParams.set("lang",LANG);history.replaceState(null,"",u);
+  paintLang();if(DATA)render()});
 function card(v,i){
-  const ph=v.photos&&v.photos.length?v.photos:[];
+  const ph=v.photos&&v.photos.length?v.photos:[];const nm=vName(v);
   return `<article class="card" id="v${i}">
-    <div class="gal">${ph.length?`<div class="track" id="tr${i}">${ph.map((id,k)=>`<img loading="${i<2&&k<2?"eager":"lazy"}" src="${pic(id,1400)}" data-alt="${pic2(id,1400)}" alt="${esc(v.name)} — фото ${k+1}" onerror="if(this.dataset.alt){this.src=this.dataset.alt;this.dataset.alt=''}else this.remove()">`).join("")}</div>`:`<div class="track"></div>`}
-      <span class="num">${i+1}</span>${ph.length>1?`<span class="cnt" id="c${i}">1 / ${ph.length}</span><button class="arr l" data-g="${i}" data-d="-1" aria-label="Предыдущее фото">‹</button><button class="arr r" data-g="${i}" data-d="1" aria-label="Следующее фото">›</button>`:""}</div>
+    <div class="gal">${ph.length?`<div class="track" id="tr${i}">${ph.map((id,k)=>`<img loading="${i<2&&k<2?"eager":"lazy"}" src="${pic(id,1400)}" data-alt="${pic2(id,1400)}" alt="${esc(nm)} — ${T("photo")} ${k+1}" onerror="if(this.dataset.alt){this.src=this.dataset.alt;this.dataset.alt=''}else this.remove()">`).join("")}</div>`:`<div class="track"></div>`}
+      <span class="num">${i+1}</span>${ph.length>1?`<span class="cnt" id="c${i}">1 / ${ph.length}</span><button class="arr l" data-g="${i}" data-d="-1" aria-label="${T("prev")}">‹</button><button class="arr r" data-g="${i}" data-d="1" aria-label="${T("next")}">›</button>`:""}</div>
     <div class="body">
       <div class="where">${esc(v.area)}</div>
-      <h2 class="name">${esc(v.name)}</h2>
-      <div class="tags"><span class="tag">${esc(brTxt(v.br))}</span>${v.yearly?'<span class="tag yr">при аренде на год</span>':""}</div>
-      <div class="price">${idr(v.price)} <small>IDR / месяц</small></div>
-      <div class="acts"><button class="btn" data-show="${i}">📍 На карте</button>${v.maps?`<a class="btn" href="${esc(v.maps)}" target="_blank" rel="noopener">Открыть в Google Maps</a>`:""}</div>
+      <h2 class="name">${esc(nm)}</h2>
+      <div class="tags"><span class="tag">${esc(brTxt(v.br))}</span>${v.yearly?`<span class="tag yr">${T("yearly")}</span>`:""}</div>
+      <div class="price">${idr(v.price)} <small>${T("perMonth")}</small></div>
+      <div class="acts"><button class="btn" data-show="${i}">${T("onMap")}</button>${v.maps?`<a class="btn" href="${esc(v.maps)}" target="_blank" rel="noopener">${T("gmaps")}</a>`:""}</div>
     </div></article>`;
 }
 function gallery(i){
@@ -120,13 +165,13 @@ document.addEventListener("click",e=>{
 function drawMap(it){
   if(!window.L){document.getElementById("map").hidden=true;return}
   const map=L.map("map",{scrollWheelZoom:false}).setView([-8.65,115.17],11);window._map=map;
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(map);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(map);
   const pts=[];window._mk=[];
   it.forEach((v,i)=>{let p=v.lat&&v.lng?[v.lat,v.lng]:null,ap=false;
     if(!p&&AREA_C[v.area]){const c=AREA_C[v.area];p=[c[0]+jit(v.lot,"a"),c[1]+jit(v.lot,"b")];ap=true}
     if(!p){window._mk.push(null);return}
     const m=L.marker(p,{icon:L.divIcon({className:"",html:`<div class="mk${ap?" ap":""}">${i+1}</div>`,iconSize:[28,28],iconAnchor:[14,14]})})
-      .bindPopup(`<b>${i+1}. ${esc(v.name)}</b><br>${esc(v.area)} · ${idr(v.price)} IDR/мес${ap?"<br><small>расположение примерное</small>":""}<br><a href="#v${i}">К фото ↓</a>`).addTo(map);
+      .bindPopup(`<b>${i+1}. ${esc(vName(v))}</b><br>${esc(v.area)} · ${idr(v.price)} ${T("perMonthShort")}${ap?`<br><small>${T("approx")}</small>`:""}<br><a href="#v${i}">${T("toPhotos")}</a>`).addTo(map);
     window._mk.push(m);pts.push(p)});
   if(pts.length>1)map.fitBounds(pts,{padding:[34,34],maxZoom:14});else if(pts.length)map.setView(pts[0],14);
 }
