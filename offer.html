@@ -108,7 +108,7 @@ const TX={
     mapAria:"Карта вилл",foot:"Цены указаны в индонезийских рупиях (IDR) за месяц аренды.",
     perMonth:"IDR / месяц",perMonthShort:"IDR/мес",yearly:"при аренде на год",onMap:"📍 На карте",gmaps:"Открыть в Google Maps",
     approx:"расположение примерное",toPhotos:"К фото ↓",photo:"фото",prev:"Предыдущее фото",next:"Следующее фото",
-    villaIn:a=>`Вилла в ${a}`,title:"Виллы на Бали — подборка",
+    villaIn:a=>`Вилла в ${a}`,aptIn:a=>`Апартаменты в ${a}`,aptTag:"🏢 апартаменты",title:"Виллы на Бали — подборка",
     cmpBtn:"⚖️ Сравнить варианты",cmpTitle:"Сравнение вариантов",cmpNote:"Лучшее значение выделено цветом. Таблицу можно листать вбок.",
     rVilla:"Вилла",rArea:"Район",rBeds:"Спальни",rPrice:"Цена в месяц",rLease:"Аренда",rMap:"Карта",monthly:"помесячно",yearOnly:"от года",exact:"точный адрес",approxS:"примерно",toCard:"К вилле ↓",close:"Закрыть",
     br:(n,plus)=>plus?n+"+ спален":n+" "+ruW(n,["спальня","спальни","спален"])},
@@ -119,7 +119,7 @@ const TX={
     mapAria:"Villas map",foot:"Prices are in Indonesian rupiah (IDR) per month.",
     perMonth:"IDR / month",perMonthShort:"IDR/mo",yearly:"with a 1-year lease",onMap:"📍 On the map",gmaps:"Open in Google Maps",
     approx:"approximate location",toPhotos:"To photos ↓",photo:"photo",prev:"Previous photo",next:"Next photo",
-    villaIn:a=>`Villa in ${a}`,title:"Bali villas — your selection",
+    villaIn:a=>`Villa in ${a}`,aptIn:a=>`Apartment in ${a}`,aptTag:"🏢 apartment",title:"Bali villas — your selection",
     cmpBtn:"⚖️ Compare options",cmpTitle:"Compare options",cmpNote:"The best value in each row is highlighted. Swipe the table sideways.",
     rVilla:"Villa",rArea:"Area",rBeds:"Bedrooms",rPrice:"Price per month",rLease:"Lease",rMap:"Map",monthly:"monthly",yearOnly:"1 year+",exact:"exact location",approxS:"approximate",toCard:"See villa ↓",close:"Close",
     br:(n,plus)=>(plus?n+"+":n)+" "+(n===1&&!plus?"bedroom":"bedrooms")}
@@ -132,7 +132,7 @@ let LANG=(()=>{const q=(QS.get("lang")||"").toLowerCase();if(q==="en"||q==="ru")
 const T=k=>TX[LANG][k];
 const idr=n=>Number(n||0).toLocaleString(LANG==="ru"?"ru-RU":"en-US").replace(/\s/g," ");
 const brTxt=br=>{const n=parseInt(br,10);if(!n)return br||"";return TX[LANG].br(n,/\+/.test(br))};
-const vName=v=>/^villa\s*$/i.test(String(v.name||"").trim())?T("villaIn")(v.area):v.name;
+const vName=v=>/^(villa|apartments?)\s*$/i.test(String(v.name||"").trim())?T(v.type==="Apartment"?"aptIn":"villaIn")(v.area):v.name;
 let DATA=null;
 
 async function main(){
@@ -196,7 +196,7 @@ function card(v,i){
     <div class="body">
       <div class="where">${esc(v.area)}</div>
       <h2 class="name">${esc(nm)}</h2>
-      <div class="tags"><span class="tag">${esc(brTxt(v.br))}</span>${v.yearly?`<span class="tag yr">${T("yearly")}</span>`:""}</div>
+      <div class="tags">${v.type==="Apartment"?`<span class="tag">${T("aptTag")}</span>`:""}<span class="tag">${esc(brTxt(v.br))}</span>${v.yearly?`<span class="tag yr">${T("yearly")}</span>`:""}</div>
       <div class="price">${idr(v.price)} <small>${T("perMonth")}</small></div>
       <div class="acts"><button class="btn" data-show="${i}">${T("onMap")}</button>${v.maps?`<a class="btn" href="${esc(v.maps)}" target="_blank" rel="noopener">${T("gmaps")}</a>`:""}</div>
     </div></article>`;
