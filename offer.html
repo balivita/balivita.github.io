@@ -39,7 +39,7 @@ h1{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,6.5vw,40px)
 .track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;aspect-ratio:4/3;background:var(--chip)}
 .track::-webkit-scrollbar{display:none}
 .track img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:center}
-.num{position:absolute;top:12px;left:12px;width:34px;height:34px;border-radius:50%;background:var(--lagoon);color:var(--lagoon-ink);display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:15px;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+.num{position:absolute;top:12px;left:12px;min-width:34px;height:34px;padding:0 12px;border-radius:999px;background:var(--lagoon);color:var(--lagoon-ink);display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:15px;box-shadow:0 4px 12px rgba(0,0,0,.25)}
 .cnt{position:absolute;bottom:12px;right:12px;background:rgba(0,0,0,.55);color:#fff;border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums}
 .arr{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.85);color:#13222A;font-size:18px;font-weight:700;cursor:pointer;display:none}
 .arr.l{left:10px}.arr.r{right:10px}
@@ -59,7 +59,7 @@ h1{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,6.5vw,40px)
 .cta a{background:var(--lagoon);color:var(--lagoon-ink);border-radius:18px;padding:16px 22px;font-weight:700;text-decoration:none;box-shadow:0 10px 30px rgba(14,158,151,.35)}
 .foot{color:var(--muted);font-size:13px;text-align:center}
 .state{text-align:center;color:var(--muted);padding:80px 10px}
-.mk{width:28px;height:28px;border-radius:50%;background:#0E9E97;color:#fff;display:grid;place-items:center;font:700 13px/1 "Onest",sans-serif;border:2px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.3)}
+.mk{min-width:28px;height:26px;padding:0 7px;border-radius:999px;white-space:nowrap;background:#0E9E97;color:#fff;display:grid;place-items:center;font:700 13px/1 "Onest",sans-serif;border:2px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.3)}
 .mk.ap{background:#fff;color:#0E9E97;border:2px dashed #0E9E97}
 .leaflet-popup-content{font-family:var(--f-body);margin:10px 12px}
 .lang{position:fixed;top:max(12px,env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px));z-index:1000;display:flex;background:var(--surface);border-radius:999px;padding:3px;box-shadow:0 6px 20px var(--shade)}
@@ -80,7 +80,7 @@ h1{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,6.5vw,40px)
 .cmp>div{padding:10px 8px;border-bottom:1px solid var(--line);font-size:14px;overflow-wrap:anywhere}
 .cmp .h{color:var(--muted);font-size:12px;font-weight:700;position:sticky;left:0;background:var(--surface);z-index:1}
 .cmp img,.cmp .ph0{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;display:block;background:var(--chip)}
-.cmp .num2{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--lagoon);color:var(--lagoon-ink);font-weight:700;font-size:12px;margin-right:6px}
+.cmp .num2{display:inline-grid;place-items:center;min-width:24px;height:22px;padding:0 7px;border-radius:999px;background:var(--lagoon);color:var(--lagoon-ink);font-weight:700;font-size:12px;margin-right:6px}
 .cmp .best{color:var(--lagoon);font-weight:800}
 .cmp .ttl{font-weight:700}
 .cmp button.lnk{border:0;background:none;color:var(--lagoon);font:700 13px var(--f-body);padding:0;cursor:pointer}
@@ -172,7 +172,7 @@ function openCompare(){
   const brNum=v=>{const k=parseInt(v.br,10)||0;return /\+/.test(v.br)?Math.max(k,5):k};const maxB=Math.max(...it.map(brNum));
   const row=(label,f)=>`<div class="h">${label}</div>`+it.map(f).join("");
   const html=row("",(v)=>{const id=v.photos&&v.photos[0];return `<div>${id?`<img src="${pic(id,600)}" data-alt="${pic2(id,600)}" alt="" onerror="if(this.dataset.alt){this.src=this.dataset.alt;this.dataset.alt=''}">`:'<div class="ph0"></div>'}</div>`})+
-    row(T("rVilla"),(v,i)=>`<div class="ttl"><span class="num2">${i+1}</span>${esc(vName(v))}</div>`)+
+    row(T("rVilla"),(v,i)=>`<div class="ttl"><span class="num2">${esc(v.lot)}</span>${esc(vName(v))}</div>`)+
     row(T("rArea"),v=>`<div>${esc(v.area)}</div>`)+
     row(T("rBeds"),v=>`<div class="${brNum(v)===maxB?"best":""}">${esc(brTxt(v.br))}</div>`)+
     row(T("rPrice"),v=>`<div class="${v.price===minP?"best":""}">${idr(v.price)} IDR</div>`)+
@@ -192,7 +192,7 @@ function card(v,i){
   const ph=v.photos&&v.photos.length?v.photos:[];const nm=vName(v);
   return `<article class="card" id="v${i}">
     <div class="gal">${ph.length?`<div class="track" id="tr${i}">${ph.map((id,k)=>`<img loading="${i<2&&k<2?"eager":"lazy"}" src="${pic(id,1400)}" data-alt="${pic2(id,1400)}" alt="${esc(nm)} — ${T("photo")} ${k+1}" onerror="if(this.dataset.alt){this.src=this.dataset.alt;this.dataset.alt=''}else this.remove()">`).join("")}</div>`:`<div class="track"></div>`}
-      <span class="num">${i+1}</span>${ph.length>1?`<span class="cnt" id="c${i}">1 / ${ph.length}</span><button class="arr l" data-g="${i}" data-d="-1" aria-label="${T("prev")}">‹</button><button class="arr r" data-g="${i}" data-d="1" aria-label="${T("next")}">›</button>`:""}</div>
+      <span class="num">${esc(v.lot)}</span>${ph.length>1?`<span class="cnt" id="c${i}">1 / ${ph.length}</span><button class="arr l" data-g="${i}" data-d="-1" aria-label="${T("prev")}">‹</button><button class="arr r" data-g="${i}" data-d="1" aria-label="${T("next")}">›</button>`:""}</div>
     <div class="body">
       <div class="where">${esc(v.area)}</div>
       <h2 class="name">${esc(nm)}</h2>
@@ -217,8 +217,8 @@ function drawMap(it){
   it.forEach((v,i)=>{let p=v.lat&&v.lng?[v.lat,v.lng]:null,ap=false;
     if(!p&&AREA_C[v.area]){const c=AREA_C[v.area];p=[c[0]+jit(v.lot,"a"),c[1]+jit(v.lot,"b")];ap=true}
     if(!p){window._mk.push(null);return}
-    const m=L.marker(p,{icon:L.divIcon({className:"",html:`<div class="mk${ap?" ap":""}">${i+1}</div>`,iconSize:[28,28],iconAnchor:[14,14]})})
-      .bindPopup(`<b>${i+1}. ${esc(vName(v))}</b><br>${esc(v.area)} · ${idr(v.price)} ${T("perMonthShort")}${ap?`<br><small>${T("approx")}</small>`:""}<br><a href="#v${i}">${T("toPhotos")}</a>`).addTo(map);
+    const m=L.marker(p,{icon:L.divIcon({className:"",html:`<div class="mk${ap?" ap":""}">${esc(v.lot)}</div>`,iconSize:[52,26],iconAnchor:[26,13]})})
+      .bindPopup(`<b>${esc(v.lot)} · ${esc(vName(v))}</b><br>${esc(v.area)} · ${idr(v.price)} ${T("perMonthShort")}${ap?`<br><small>${T("approx")}</small>`:""}<br><a href="#v${i}">${T("toPhotos")}</a>`).addTo(map);
     window._mk.push(m);pts.push(p)});
   if(pts.length>1)map.fitBounds(pts,{padding:[34,34],maxZoom:14});else if(pts.length)map.setView(pts[0],14);
 }

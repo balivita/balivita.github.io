@@ -189,7 +189,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
       <div class="wheels">
         <div class="col"><label>Район</label><div class="wheel" id="w-area"><ul></ul></div></div>
         <div class="col"><label>Спальни</label><div class="wheel" id="w-br"><ul></ul></div></div>
-        <div class="col"><label>До, млн</label><div class="wheel" id="w-price"><ul></ul></div></div>
+        <div class="col"><label>Бюджет, млн</label><div class="wheel" id="w-price"><ul></ul></div></div>
       </div>
       <button class="go" id="go" disabled>Загружаю…</button>
       <button class="go2" id="gomap" disabled>🗺 Показать на карте</button>
@@ -223,7 +223,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 <div class="toast" id="toast" hidden></div>
 
 <script>
-const APP_V="45";
+const APP_V="46";
 /* автообновление: если на сайте вышла новая версия, перезагружаемся на неё (Telegram любит держать старую) */
 (async()=>{try{const t=await (await fetch(location.pathname+"?cb="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const APP_V="(\d+)"/);
   if(m&&m[1]!==APP_V){const k="bv_upd_"+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,"1");const u=new URL(location.href);u.searchParams.set("v",m[1]);location.replace(u.toString())}}}catch(e){}})();
@@ -234,7 +234,7 @@ else if(matchMedia("(prefers-color-scheme: dark)").matches)document.documentElem
 const hap=t=>{try{const H=tg&&tg.HapticFeedback;if(!H)return;t==="sel"?H.selectionChanged():/^(success|warning|error)$/.test(t)?H.notificationOccurred(t):H.impactOccurred(t)}catch(e){}};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const PRICES=[10,15,20,25,30,40,50,70,100,150,0];
+const PRICES=[0,"10-30","30-50","50-70","70+"];
 const BRS=["Любые","1","2","3","4","5+"];
 let V=[];
 const st={view:"list",area:"Все районы",br:"Любые",max:0,sortAsc:true,f:{monthly:false,private:false,phone:false,photo:false},pick:new Map(),custom:{},markup:20,client:"",shown:20};
@@ -248,7 +248,7 @@ function save(){try{localStorage.setItem("bv_pick",JSON.stringify([...st.pick.ke
 function matches(v){
   if(st.area!=="Все районы"&&v.area!==st.area)return false;
   if(st.br!=="Любые"){const n=brN(v);if(st.br==="5+"?n<5:n!==+st.br)return false}
-  if(st.max&&v.price>st.max*1e6)return false;
+  if(st.max){const[a,b]=String(st.max).replace("+","-").split("-").map(Number);const m=v.price/1e6;if(m<a||(b&&m>=b))return false}
   if(st.f.monthly&&v.yearly)return false; if(st.f.private&&!v.own)return false;
   if(st.f.phone&&!v.phone)return false; if(st.f.photo&&!v.photo)return false;
   return v.price>0;
@@ -506,7 +506,7 @@ const idr=n=>n.toLocaleString("ru-RU").replace(/ /g," ");
 function offerText(){
   const list=[...st.pick.values()];
   return `Здравствуйте${st.client?", "+st.client:""}! Подобрала для вас ${list.length} ${word(list.length)} на Бали 🌴\n\nФото, цены и расположение на карте — по ссылке:\n🔗 ссылка появится после отправки\n\nКакой вариант посмотрим первым?\n\nНа странице: `+
-    list.map((v,i)=>`${i+1}) ${v.area} · ${v.br} · ${mln(cp(v))} млн`).join("; ");
+    list.map(v=>`${v.lot} · ${v.area} · ${v.br} · ${mln(cp(v))} млн`).join("; ");
 }
 function openOffer(){
   openSheet(`<h3>Предложение клиенту</h3>
@@ -520,8 +520,8 @@ function openOffer(){
   const paint=()=>{const list=[...st.pick.values()];
     $("#lines").innerHTML=list.map(v=>`<div class="line"><div class="n">${esc(v.name)}<small>${esc(v.lot)} · ${esc(v.area)} · ${esc(v.br)}</small></div><span class="b">${mln(v.price)}</span><label class="pi${st.custom[v.lot]>0?" own":""}"><input type="text" inputmode="decimal" data-cp="${esc(v.lot)}" value="${mln(cp(v))}" aria-label="Цена для клиента, млн">млн</label><button class="x" data-rm="${esc(v.lot)}" aria-label="Убрать">×</button></div>`).join("");
     $("#msg").textContent=offerText();$("#mko").textContent="+"+st.markup+"%";
-    $("#send").textContent=`Отправить в чат · ${list.length} ${word(list.length)}`;$("#send").disabled=!list.length||list.length>10;
-    if(list.length>10)$("#send").textContent="Максимум 10 вилл в одном предложении";
+    $("#send").textContent=`Отправить в чат · ${list.length} ${word(list.length)}`;$("#send").disabled=!list.length||list.length>20;
+    if(list.length>20)$("#send").textContent="Максимум 20 вилл в одном предложении";
     $("#lines").querySelectorAll("[data-cp]").forEach(inp=>{
       inp.onfocus=()=>inp.select();
       inp.oninput=()=>{const n=parseFloat(inp.value.replace(",",".").replace(/[^\d.]/g,""));
@@ -559,7 +559,7 @@ async function load(){
     const areas=["Все районы",...Object.keys(counts).filter(a=>a!=="Other").sort()];
     wheel($("#w-area"),areas,a=>a==="Все районы"?`Все<small>${V.length}</small>`:`${esc(a)}<small>${counts[a]}</small>`,st.area,v=>st.area=v);
     wheel($("#w-br"),BRS,b=>b==="Любые"?"Любые":b+"BR",st.br,v=>st.br=v);
-    wheel($("#w-price"),PRICES,p=>p?"до "+p:"без лимита",st.max,v=>st.max=v);
+    wheel($("#w-price"),PRICES,p=>p?String(p).replace("-","–"):"любой",st.max,v=>st.max=v);
     $("#sub").textContent=`${V.length} ${word(V.length)} в базе`;
     try{const p=JSON.parse(localStorage.getItem("bv_pick")||"[]");p.forEach(l=>{const v=V.find(x=>x.lot===l);if(v)st.pick.set(l,v)});const m=localStorage.getItem("bv_mk");if(m!==null)st.markup=+m;st.custom=JSON.parse(localStorage.getItem("bv_cp")||"{}")||{}}catch(e){}
     updBasket();updCount();
