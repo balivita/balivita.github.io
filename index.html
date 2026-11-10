@@ -196,7 +196,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
       <button class="go" id="go" disabled>Загружаю…</button>
       <button class="go2" id="gomap" disabled>🗺 Показать на карте</button>
       <button class="go2" id="golink" disabled>🔗 Есть ли в базе? Проверить по ссылке</button>
-      <div class="hint">Крутите колёсики, число вилл обновляется сразу</div>
+      <div class="hint">Крутите колёсики, число вариантов обновляется сразу</div>
     </div>
   </section>
 
@@ -225,7 +225,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 <div class="toast" id="toast" hidden></div>
 
 <script>
-const APP_V="48";
+const APP_V="49";
 /* автообновление: если на сайте вышла новая версия, перезагружаемся на неё (Telegram любит держать старую) */
 (async()=>{try{const t=await (await fetch(location.pathname+"?cb="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const APP_V="(\d+)"/);
   if(m&&m[1]!==APP_V){const k="bv_upd_"+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,"1");const u=new URL(location.href);u.searchParams.set("v",m[1]);location.replace(u.toString())}}}catch(e){}})();
@@ -241,6 +241,10 @@ const BRS=["Любые","1","2","3","4","5+"];
 let V=[];
 const st={type:"All",view:"list",area:"Все районы",br:"Любые",max:0,sortAsc:true,f:{monthly:false,private:false,phone:false,photo:false},pick:new Map(),custom:{},markup:20,client:"",shown:20};
 const mln=p=>(Math.round(p/1e5)/10).toString().replace(".",",");
+const ruN=(n,f)=>{const a=n%10,b=n%100;return (a===1&&b!==11)?f[0]:(a>=2&&a<=4&&(b<10||b>=20))?f[1]:f[2]};
+const countLabel=n=>st.type==="Apartment"?`апартаменты · ${n}`:st.type==="Villa"?`${n} ${word(n)}`:`${n} ${ruN(n,["объект","объекта","объектов"])}`;
+function paintAreaCounts(){const pool=V.filter(v=>st.type==="All"||(v.type||"Villa")===st.type);const c={};pool.forEach(v=>c[v.area]=(c[v.area]||0)+1);
+  $("#w-area").querySelectorAll("li").forEach((li,i)=>{const sm=li.querySelector("small");if(!sm)return;const a=li.dataset.a;sm.textContent=a==="Все районы"?pool.length:(c[a]||0)})}
 const word=n=>{const a=n%10,b=n%100;return (a===1&&b!==11)?"вилла":(a>=2&&a<=4&&(b<10||b>=20))?"виллы":"вилл"};
 const brN=v=>{const n=parseInt(v.br,10)||0;return /\+/.test(v.br)?Math.max(n,5):n};
 const img=v=>v.photo?`https://drive.google.com/thumbnail?id=${v.photo}&sz=w800`:"";
@@ -266,7 +270,7 @@ function wheel(el,items,label,initial,onPick){
   el.addEventListener("scroll",()=>{paint();const r=Math.round(el.scrollTop/H);if(r!==last){last=r;hap("sel")}clearTimeout(t);t=setTimeout(()=>{const n=Math.round(el.scrollTop/H);if(n!==idx){idx=n;onPick(items[n]);updCount()}},90)},{passive:true});
   lis.forEach((li,i)=>li.addEventListener("click",()=>el.scrollTo({top:i*H,behavior:"smooth"})));
 }
-function updCount(){const n=found().length;$("#go").textContent=n?`Показать ${n} ${word(n)}`:"Ничего не найдено";$("#go").disabled=!n;$("#gomap").disabled=!n;$("#golink").disabled=!V.length}
+function updCount(){const n=found().length;$("#go").textContent=n?`Показать ${countLabel(n)}`:"Ничего не найдено";$("#go").disabled=!n;$("#gomap").disabled=!n;$("#golink").disabled=!V.length}
 
 function card(v){
   const on=st.pick.has(v.lot),h=HUE(v.area);
@@ -309,7 +313,7 @@ function renderList(fit){
   const isMap=st.view==="map";$("#list").hidden=isMap;$("#mapbox").hidden=!isMap;$("#sort").hidden=isMap;
   $("#seg").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===st.view));
   const r=found(),part=r.slice(0,st.shown);
-  $("#rtitle").textContent=`${st.area==="Все районы"?"Все районы":st.area} · ${st.br==="Любые"?"любые спальни":st.br+"BR"} · ${r.length} ${word(r.length)}`;
+  $("#rtitle").textContent=`${st.area==="Все районы"?"Все районы":st.area} · ${st.br==="Любые"?"любые спальни":st.br+"BR"} · ${countLabel(r.length)}`;
   $("#list").innerHTML=r.length?part.map(card).join("")+(r.length>part.length?`<button class="more" id="more">Ещё ${Math.min(20,r.length-part.length)} из ${r.length-part.length}</button>`:""):`<div class="empty">Под эти фильтры ничего нет. Снимите фильтр или поднимите бюджет.</div>`;
   const m=$("#more");if(m)m.onclick=()=>{st.shown+=20;renderList()};
   if(!isMap)wireGalleries();
@@ -319,7 +323,7 @@ function show(scr){$("#search").hidden=scr!=="search";$("#results").hidden=scr!=
   if(tg&&tg.BackButton){scr==="results"?tg.BackButton.show():tg.BackButton.hide()}}
 $("#go").onclick=()=>{st.view="list";st.shown=20;show("results");renderList();hap("light")};
 $("#gomap").onclick=()=>{st.view="map";st.shown=20;show("results");renderList();hap("light")};
-$("#tseg").onclick=e=>{const b=e.target.closest("[data-t]");if(!b||b.dataset.t===st.type)return;st.type=b.dataset.t;$("#tseg").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));updCount();hap("sel")};
+$("#tseg").onclick=e=>{const b=e.target.closest("[data-t]");if(!b||b.dataset.t===st.type)return;st.type=b.dataset.t;$("#tseg").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));paintAreaCounts();updCount();hap("sel")};
 $("#seg").onclick=e=>{const b=e.target.closest("button");if(!b||b.dataset.v===st.view)return;st.view=b.dataset.v;renderList();hap("sel")};
 $("#back").onclick=()=>{updCount();show("search")};
 if(tg&&tg.BackButton)tg.BackButton.onClick(()=>{if(!$("#sheet").hidden)closeSheet();else{updCount();show("search")}});
@@ -431,7 +435,7 @@ async function saveVilla(){
     const r=await fetch(API,{method:"POST",body:JSON.stringify({action:"addVilla",initData,photos:shots,
       villa:{name:g("a-name"),area:g("a-area"),br:g("a-br"),price:Math.round(price*1e6),phone:g("a-phone"),maps:g("a-maps"),notes,src:g("a-src"),type:($("#a-type [aria-pressed=true]")||{}).dataset?.t||"Villa"}})});
     const j=await r.json();
-    if(j.ok){hap("success");closeSheet();toast(`Готово: вилла ${j.lot} в базе`);setTimeout(()=>location.reload(),1800)}
+    if(j.ok){hap("success");closeSheet();toast(`Готово: ${j.lot} в базе`);setTimeout(()=>location.reload(),1800)}
     else{toast(j.error==="auth"?"Откройте через бота в Telegram":(j.error||"Не получилось"));b.disabled=false;b.textContent="Попробовать ещё раз"}
   }catch(e){toast("Нет связи с базой. Попробуйте ещё раз");b.disabled=false;b.textContent="Попробовать ещё раз"}
 }
@@ -565,9 +569,10 @@ async function load(){
     const counts={};V.forEach(v=>counts[v.area]=(counts[v.area]||0)+1);
     const areas=["Все районы",...Object.keys(counts).filter(a=>a!=="Other").sort()];
     wheel($("#w-area"),areas,a=>a==="Все районы"?`Все<small>${V.length}</small>`:`${esc(a)}<small>${counts[a]}</small>`,st.area,v=>st.area=v);
+    $("#w-area").querySelectorAll("li").forEach((li,i)=>li.dataset.a=areas[i]);
     wheel($("#w-br"),BRS,b=>b==="Любые"?"Любые":b+"BR",st.br,v=>st.br=v);
     wheel($("#w-price"),PRICES,p=>p?String(p).replace("-","–"):"любой",st.max,v=>st.max=v);
-    $("#sub").textContent=`${V.length} ${word(V.length)} в базе`;
+    {const na=V.filter(v=>v.type==="Apartment").length,nv=V.length-na;$("#sub").textContent=`${nv} ${word(nv)}${na?` · ${na} апарт.`:""} в базе`}
     try{const p=JSON.parse(localStorage.getItem("bv_pick")||"[]");p.forEach(l=>{const v=V.find(x=>x.lot===l);if(v)st.pick.set(l,v)});const m=localStorage.getItem("bv_mk");if(m!==null)st.markup=+m;st.custom=JSON.parse(localStorage.getItem("bv_cp")||"{}")||{}}catch(e){}
     updBasket();updCount();
     const op=new URLSearchParams(location.search).get("open");
