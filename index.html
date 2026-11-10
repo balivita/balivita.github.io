@@ -181,7 +181,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 <div class="app">
   <div class="top">
     <div class="brand">Baza Vita<small id="sub">Загружаю базу…</small></div>
-    <div class="topr"><form class="lotsearch" id="lotf"><input id="loti" enterkeyhint="search" placeholder="#LOT" aria-label="Номер LOT"><button>Найти</button></form><button class="plus" id="plus" aria-label="Добавить виллу" title="Добавить виллу">+</button></div>
+    <div class="topr"><form class="lotsearch" id="lotf"><input id="loti" enterkeyhint="search" placeholder="#LOT / A1" aria-label="Номер LOT"><button>Найти</button></form><button class="plus" id="plus" aria-label="Добавить виллу" title="Добавить виллу">+</button></div>
   </div>
 
   <section id="search">
@@ -225,7 +225,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 <div class="toast" id="toast" hidden></div>
 
 <script>
-const APP_V="47";
+const APP_V="48";
 /* автообновление: если на сайте вышла новая версия, перезагружаемся на неё (Telegram любит держать старую) */
 (async()=>{try{const t=await (await fetch(location.pathname+"?cb="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const APP_V="(\d+)"/);
   if(m&&m[1]!==APP_V){const k="bv_upd_"+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,"1");const u=new URL(location.href);u.searchParams.set("v",m[1]);location.replace(u.toString())}}}catch(e){}})();
@@ -326,7 +326,7 @@ if(tg&&tg.BackButton)tg.BackButton.onClick(()=>{if(!$("#sheet").hidden)closeShee
 $("#sort").onclick=()=>{st.sortAsc=!st.sortAsc;$("#sort").textContent=st.sortAsc?"Сначала дешевле":"Сначала дороже";renderList()};
 $("#chips").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;const k=b.dataset.f;st.f[k]=!st.f[k];b.setAttribute("aria-pressed",st.f[k]);st.shown=20;renderList();hap("sel")};
 $("#list").onclick=e=>{const a=e.target.closest("[data-add]");if(a){togglePick(a.dataset.add);renderList();return}const o=e.target.closest("[data-open]");if(o)openDetail(o.dataset.open)};
-$("#lotf").onsubmit=e=>{e.preventDefault();hideKb();const raw=($("#loti").value||"").trim();if(/[./]/.test(raw)&&/[a-z]/i.test(raw)){$("#loti").value="";openLinkCheck(raw);return}const n=parseInt(($("#loti").value||"").replace(/\D/g,""),10);if(!n)return;const lot="#"+String(n).padStart(3,"0");if(V.find(v=>v.lot===lot))openDetail(lot);else toast(`LOT ${lot} не найден`)};
+$("#lotf").onsubmit=e=>{e.preventDefault();hideKb();const raw=($("#loti").value||"").trim();if(/[./]/.test(raw)&&/[a-z]/i.test(raw)){$("#loti").value="";openLinkCheck(raw);return}const n=parseInt(raw.replace(/\D/g,""),10);if(!n)return;const lot=(/^\s*#?\s*[aа]/i.test(raw)?"#A":"#")+String(n).padStart(3,"0");if(V.find(v=>v.lot===lot))openDetail(lot);else toast(`LOT ${lot} не найден`)};
 function togglePick(lot){st.pick.has(lot)?st.pick.delete(lot):st.pick.set(lot,V.find(v=>v.lot===lot));updBasket();save();hap("light")}
 function updBasket(){const n=st.pick.size;$("#bcnt").textContent=n;$("#basket").disabled=!n}
 
