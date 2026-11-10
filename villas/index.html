@@ -190,6 +190,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 <div class="marq" aria-hidden="true"><div class="marq-in" id="marq"></div></div>
 
 <div class="bar" id="bar"><div class="wrap">
+  <div class="row" id="types" role="group" aria-label="Type"></div>
   <div class="row" id="areas" role="group" aria-label="Район" data-ta="area"></div>
   <div class="row2">
     <div class="row" id="brs" role="group" aria-label="Спальни" data-ta="beds"></div>
@@ -226,14 +227,14 @@ const TX={
   st1:"вилл в каталоге",st2:"районов",st3:"с фотографиями",cue:"листайте",grid:"Плитка",map:"Карта",loading:"Загружаю каталог…",hint:"Нажмите на виллу, чтобы посмотреть все фото и расположение.",
   empty:"По этим фильтрам вилл нет — попробуйте другой район или количество спален.",upd:"Каталог обновляется автоматически",top:"Наверх",
   allAreas:"Все районы",other:"Другие районы",any:"Любые",brShort:"сп.",found:n=>`Найдено <b>${n}</b> ${word(n,["вилла","виллы","вилл"])}`,allVillas:"Все виллы",
-  villaIn:a=>`Вилла в ${a}`,onMap:"📍 на карте",yearPill:"на год",about:"О вилле",area:"Район",beds:"Спальни",lease:"Аренда",fromYear:"от года",monthly:"помесячно",ref:"Номер",photos:"Фото",location:"Расположение",
+  villaIn:a=>`Вилла в ${a}`,aptIn:a=>`Апартаменты в ${a}`,tAll:"Всё",tVilla:"🏡 Виллы",tApt:"🏢 Апартаменты",aptPill:"апартаменты",onMap:"📍 на карте",yearPill:"на год",about:"О вилле",area:"Район",beds:"Спальни",lease:"Аренда",fromYear:"от года",monthly:"помесячно",ref:"Номер",photos:"Фото",location:"Расположение",
   approx:"примерно",close:"Закрыть",prev:"Предыдущее фото",next:"Следующее фото",photo:"фото",mapFail:"Карта не загрузилась",loadFail:"Не удалось загрузить каталог. Обновите страницу чуть позже.",
   title:"Bali Vita — виллы на Бали",br:(n,p)=>p?n+"+ спален":n+" "+word(n,["спальня","спальни","спален"])},
  en:{nav:"Catalogue",kicker:"Long-term rentals",h1a:"Villas",h1b:"in Bali",lead:"Hand-picked villas in the island's best areas — from Canggu's surf spots to Ubud's jungle. Browse, choose and explore them on the map.",
   st1:"villas listed",st2:"areas",st3:"with photos",cue:"scroll",grid:"Grid",map:"Map",loading:"Loading catalogue…",hint:"Tap a villa to see all photos and its location.",
   empty:"No villas match these filters — try another area or number of bedrooms.",upd:"The catalogue updates automatically",top:"Back to top",
   allAreas:"All areas",other:"Other areas",any:"Any",brShort:"BR",found:n=>`<b>${n}</b> ${n===1?"villa":"villas"} found`,allVillas:"All villas",
-  villaIn:a=>`Villa in ${a}`,onMap:"📍 on the map",yearPill:"1-year",about:"About the villa",area:"Area",beds:"Bedrooms",lease:"Lease",fromYear:"1 year+",monthly:"monthly",ref:"Ref.",photos:"Photos",location:"Location",
+  villaIn:a=>`Villa in ${a}`,aptIn:a=>`Apartment in ${a}`,tAll:"All",tVilla:"🏡 Villas",tApt:"🏢 Apartments",aptPill:"apartment",onMap:"📍 on the map",yearPill:"1-year",about:"About the villa",area:"Area",beds:"Bedrooms",lease:"Lease",fromYear:"1 year+",monthly:"monthly",ref:"Ref.",photos:"Photos",location:"Location",
   approx:"approx.",close:"Close",prev:"Previous photo",next:"Next photo",photo:"photo",mapFail:"The map didn't load",loadFail:"Couldn't load the catalogue. Please refresh a bit later.",
   title:"Bali Vita — villas in Bali",br:(n,p)=>(p?n+"+":n)+" "+(n===1&&!p?"bedroom":"bedrooms")}
 };
@@ -242,7 +243,7 @@ let LANG=(()=>{const q=(QS.get("lang")||"").toLowerCase();if(q==="en"||q==="ru")
 const T=k=>TX[LANG][k];
 const brTxt=br=>{const n=brN(br);if(!n)return br||"";return T("br")(n,n>=5)};
 const areaRu=a=>a==="Other"?T("other"):a;
-const title=v=>/^villa\s*$/i.test(v.name.trim())?T("villaIn")(areaRu(v.area)):v.name;
+const title=v=>/^(villa|apartments?)\s*$/i.test(v.name.trim())?T(v.type==="Apartment"?"aptIn":"villaIn")(areaRu(v.area)):v.name;
 function paintStatic(){document.documentElement.lang=LANG;document.title=T("title");
   document.querySelectorAll("[data-t]").forEach(el=>{const v=TX[LANG][el.dataset.t];if(typeof v==="string")el.textContent=v});
   document.querySelectorAll("[data-ta]").forEach(el=>el.setAttribute("aria-label",T(el.dataset.ta)));
@@ -255,7 +256,7 @@ document.querySelector(".lang").onclick=e=>{const b=e.target.closest("[data-l]")
 const jit=(lot,k)=>{let h=7;for(const c of lot+k)h=(h*131+c.charCodeAt(0))%100003;return (h/100003-.5)*.014};
 
 let ALL=[],LIST=[],shown=0,map=null,mlayer=null;
-const st={area:"all",br:"all",view:"grid"};
+const st={type:"all",area:"all",br:"all",view:"grid"};
 
 /* ---------- hero ---------- */
 function heroSlides(items){
@@ -274,13 +275,17 @@ function buildFilters(){
   $("#areas").innerHTML=`<button class="chip" data-a="all" aria-pressed="true">${T("allAreas")}<small>${ALL.length}</small></button>`+areas.map(a=>`<button class="chip" data-a="${esc(a)}" aria-pressed="false">${esc(areaRu(a))}<small>${c[a]}</small></button>`).join("");
   $("#brs").innerHTML=[["all",T("any")],["1","1"],["2","2"],["3","3"],["4","4"],["5","5+"]].map(([k,t],i)=>`<button class="chip" data-b="${k}" aria-pressed="${!i}">${k==="all"?t:t+" "+T("brShort")}</button>`).join("");
   $("#marq").innerHTML=[0,1].map(()=>areas.filter(a=>a!=="Other").map(a=>`<span>${esc(a)}</span>`).join("")).join("");
+  const nA=ALL.filter(v=>v.type==="Apartment").length;
+  $("#types").innerHTML=[["all",T("tAll"),ALL.length],["Villa",T("tVilla"),ALL.length-nA],["Apartment",T("tApt"),nA]].map(([k,t,n])=>`<button class="chip" data-ty="${k}" aria-pressed="${k===st.type}">${t}<small>${n}</small></button>`).join("");
+  $("#types").hidden=!nA;
+  $("#types").onclick=e=>{const b=e.target.closest("[data-ty]");if(!b)return;st.type=b.dataset.ty;$("#types").querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===b));apply(true)};
   $("#areas").onclick=e=>{const b=e.target.closest("[data-a]");if(!b)return;st.area=b.dataset.a;$("#areas").querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===b));apply(true)};
   $("#brs").onclick=e=>{const b=e.target.closest("[data-b]");if(!b)return;st.br=b.dataset.b;$("#brs").querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===b));apply(true)};
   document.querySelector(".seg").onclick=e=>{const b=e.target.closest("button");if(!b)return;st.view=b.dataset.v;document.querySelectorAll(".seg button").forEach(x=>x.setAttribute("aria-pressed",x===b));apply(false)};
   return areas.filter(a=>a!=="Other").length;
 }
 function apply(scroll){
-  LIST=ALL.filter(v=>(st.area==="all"||v.area===st.area)&&(st.br==="all"||(st.br==="5"?brN(v.br)>=5:brN(v.br)===+st.br)));
+  LIST=ALL.filter(v=>(st.type==="all"||(v.type||"Villa")===st.type)&&(st.area==="all"||v.area===st.area)&&(st.br==="all"||(st.br==="5"?brN(v.br)>=5:brN(v.br)===+st.br)));
   const n=LIST.length;
   $("#count").innerHTML=`${T("found")(n)}${st.area!=="all"?" · "+esc(areaRu(st.area)):""}`;
   $("#secTitle").textContent=st.area==="all"?T("allVillas"):areaRu(st.area);
@@ -296,7 +301,7 @@ function card(v,i){
   const el=document.createElement("article");el.className="card";el.tabIndex=0;el.setAttribute("role","button");el.setAttribute("aria-label",title(v)+", "+areaRu(v.area));
   el.style.transitionDelay=(i%6)*70+"ms";
   el.innerHTML=`<div class="im"><div class="sk"></div><img loading="lazy" alt="" src="${pic(v.photo,900)}" data-alt="${pic2(v.photo,900)}" onload="this.previousElementSibling&&this.previousElementSibling.remove()" onerror="${imgErr}"></div>
-    <div class="top"><span class="pill">${esc(v.lot)}</span>${v.yearly?`<span class="pill yr">${T("yearPill")}</span>`:""}</div>
+    <div class="top"><span class="pill">${esc(v.lot)}${v.type==="Apartment"?" · "+T("aptPill"):""}</span>${v.yearly?`<span class="pill yr">${T("yearPill")}</span>`:""}</div>
     <div class="bot"><div class="area">${esc(areaRu(v.area))}</div><h3>${esc(title(v))}</h3><div class="meta"><span>🛏 ${esc(brTxt(v.br))}</span>${v.lat?`<span>${T("onMap")}</span>`:""}</div></div>
     <span class="go" aria-hidden="true">↗</span>`;
   el.onclick=()=>openLB(v);el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openLB(v)}};
