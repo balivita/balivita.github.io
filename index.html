@@ -57,8 +57,15 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 .card{background:var(--surface);border-radius:20px;overflow:hidden;box-shadow:0 6px 18px var(--shade)}
 .ph{position:relative;aspect-ratio:16/10;width:100%;display:flex;align-items:flex-end;padding:12px;color:#fff;overflow:hidden;cursor:pointer}
 .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.ph::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 55%,rgba(0,0,0,.45))}
-.ph .lot,.ph .area{position:relative;z-index:1}
+.ph::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 55%,rgba(0,0,0,.45));pointer-events:none}
+.ph .trk{position:absolute;inset:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.ph .trk::-webkit-scrollbar{display:none}
+.ph .trk img{position:static;flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:center;scroll-snap-stop:always}
+.ph .pc{position:absolute;top:10px;right:10px;z-index:2;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);border-radius:999px;padding:4px 9px;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;pointer-events:none}
+.ph .dots{position:absolute;left:0;right:0;bottom:8px;z-index:2;display:flex;justify-content:center;gap:4px;pointer-events:none}
+.ph .dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5);transition:background .2s,transform .2s}
+.ph .dots i.on{background:#fff;transform:scale(1.25)}
+.ph .lot,.ph .area{position:relative;z-index:1;pointer-events:none}
 .ph .lot{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700}
 .ph .area{font-family:var(--f-display);font-size:21px;font-weight:700;text-shadow:0 2px 12px rgba(0,0,0,.35)}
 .body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:8px}
@@ -216,7 +223,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 <div class="toast" id="toast" hidden></div>
 
 <script>
-const APP_V="44";
+const APP_V="45";
 /* автообновление: если на сайте вышла новая версия, перезагружаемся на неё (Telegram любит держать старую) */
 (async()=>{try{const t=await (await fetch(location.pathname+"?cb="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const APP_V="(\d+)"/);
   if(m&&m[1]!==APP_V){const k="bv_upd_"+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,"1");const u=new URL(location.href);u.searchParams.set("v",m[1]);location.replace(u.toString())}}}catch(e){}})();
@@ -261,12 +268,39 @@ function updCount(){const n=found().length;$("#go").textContent=n?`Показа�
 function card(v){
   const on=st.pick.has(v.lot),h=HUE(v.area);
   return `<article class="card"><div class="ph" data-open="${esc(v.lot)}" style="background:linear-gradient(135deg,hsl(${h} 50% 40%),hsl(${(h+40)%360} 55% 26%))">
-    ${v.photo?`<img loading="lazy" alt="" src="${img(v)}" onerror="this.remove()">`:""}
+    ${v.photo?`<div class="trk" data-lot="${esc(v.lot)}"><img loading="lazy" alt="" src="${img(v)}" onerror="this.remove()"></div><span class="pc" hidden></span><span class="dots" hidden></span>`:""}
     <span class="lot">${esc(v.lot)}</span><span class="area">${esc(v.area)}</span></div>
     <div class="body"><div class="name">${esc(v.name)}</div>
       <div class="meta"><span class="tag">${esc(v.br)}</span>${v.own?'<span class="tag own">Частное</span>':v.agency?'<span class="tag">Агентство</span>':""}${v.yearly?'<span class="tag yr">Только год</span>':""}${v.phone?'<span class="tag">WhatsApp</span>':""}</div>
       <div class="row"><div class="price">${mln(v.price)} млн <small>/ мес</small></div>
       <button class="add" data-add="${esc(v.lot)}" aria-pressed="${on}">${on?"✓ В подборке":"+ В подборку"}</button></div></div></article>`;
+}
+/* ---------- листаемые фото на карточках ---------- */
+const phCache={};let phBusy=0;const phQueue=[];
+function photoList(lot){
+  if(phCache[lot])return phCache[lot];
+  phCache[lot]=new Promise(res=>{phQueue.push(()=>fetch(API+"?api=photos&lot="+encodeURIComponent(lot)).then(r=>r.json()).then(j=>res(j&&j.ok?j.photos||[]:[])).catch(()=>res([])).finally(()=>{phBusy--;pump()}));pump()});
+  return phCache[lot];
+}
+function pump(){while(phBusy<3&&phQueue.length){phBusy++;phQueue.shift()()}}
+const thumbUrl=id=>`https://drive.google.com/thumbnail?id=${id}&sz=w800`;
+function paintPos(ph){const tr=ph.querySelector(".trk");if(!tr)return;const n=tr.children.length,k=Math.min(n-1,Math.round(tr.scrollLeft/Math.max(1,tr.clientWidth)));
+  const pc=ph.querySelector(".pc"),dots=ph.querySelector(".dots");if(n<2){pc.hidden=true;dots.hidden=true;return}
+  pc.hidden=false;pc.textContent=`${k+1} / ${n}`;
+  if(n<=12){dots.hidden=false;if(dots.children.length!==n)dots.innerHTML="<i></i>".repeat(n);[...dots.children].forEach((d,i)=>d.classList.toggle("on",i===k))}else dots.hidden=true}
+function fillGallery(ph){
+  const tr=ph.querySelector(".trk");if(!tr||tr.dataset.done)return;tr.dataset.done="1";
+  const lot=tr.dataset.lot,v=V.find(x=>x.lot===lot);
+  photoList(lot).then(ids=>{ids=ids.filter(id=>!v||id!==v.photo);if(!ids.length||!tr.isConnected)return;
+    tr.insertAdjacentHTML("beforeend",ids.map(id=>`<img loading="lazy" alt="" src="${thumbUrl(id)}" onerror="this.remove()">`).join(""));paintPos(ph)});
+}
+const galIO=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){fillGallery(e.target);galIO.unobserve(e.target)}}),{rootMargin:"300px 0px"});
+function wireGalleries(){
+  $("#list").querySelectorAll(".ph").forEach(ph=>{const tr=ph.querySelector(".trk");if(!tr)return;
+    galIO.observe(ph);
+    let last=-1;tr.addEventListener("scroll",()=>{fillGallery(ph);const k=Math.round(tr.scrollLeft/Math.max(1,tr.clientWidth));if(k!==last){if(last>=0)hap("sel");last=k}paintPos(ph)},{passive:true});
+    tr.addEventListener("touchstart",()=>fillGallery(ph),{passive:true});
+  });
 }
 function renderList(fit){
   const isMap=st.view==="map";$("#list").hidden=isMap;$("#mapbox").hidden=!isMap;$("#sort").hidden=isMap;
@@ -275,6 +309,7 @@ function renderList(fit){
   $("#rtitle").textContent=`${st.area==="Все районы"?"Все районы":st.area} · ${st.br==="Любые"?"любые спальни":st.br+"BR"} · ${r.length} ${word(r.length)}`;
   $("#list").innerHTML=r.length?part.map(card).join("")+(r.length>part.length?`<button class="more" id="more">Ещё ${Math.min(20,r.length-part.length)} из ${r.length-part.length}</button>`:""):`<div class="empty">Под эти фильтры ничего нет. Снимите фильтр или поднимите бюджет.</div>`;
   const m=$("#more");if(m)m.onclick=()=>{st.shown+=20;renderList()};
+  if(!isMap)wireGalleries();
   if(isMap)renderMap(fit!==false);
 }
 function show(scr){$("#search").hidden=scr!=="search";$("#results").hidden=scr!=="results";$("#back").hidden=scr!=="results";window.scrollTo(0,0);
